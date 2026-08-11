@@ -6,7 +6,26 @@
     return "R$ " + value.toFixed(2).replace(".", ",");
   }
 
-  function buildItemCard(item, fallbackPrice) {
+  function buildFlavorSelect(flavors) {
+    const select = document.createElement("select");
+    select.className = "flavor-select";
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Escolha o sabor";
+    select.appendChild(placeholder);
+
+    flavors.forEach((flavor) => {
+      const opt = document.createElement("option");
+      opt.value = flavor;
+      opt.textContent = flavor;
+      select.appendChild(opt);
+    });
+
+    return select;
+  }
+
+  function buildItemCard(item, fallbackPrice, flavors) {
     const price = typeof item.price === "number" ? item.price : fallbackPrice;
     const card = document.createElement("div");
     card.className = "item-card";
@@ -35,22 +54,32 @@
       card.appendChild(desc);
     }
 
+    let select = null;
+    if (flavors && flavors.length) {
+      select = buildFlavorSelect(flavors);
+      card.appendChild(select);
+    }
+
     const btn = document.createElement("button");
     btn.className = "item-order-btn";
     btn.type = "button";
     btn.textContent = "+ Adicionar ao carrinho";
-    btn.addEventListener("click", () => addToCart(item.name, price));
+    btn.addEventListener("click", () => {
+      if (select && !select.value) {
+        showToast("Escolha um sabor primeiro");
+        return;
+      }
+      const label = select ? `${item.name} — ${select.value}` : item.name;
+      addToCart(label, price);
+    });
     card.appendChild(btn);
 
     return card;
   }
 
-  function buildSizeCard(groupName, size) {
-    const label = `${groupName} ${size.label}`;
-    const card = document.createElement("button");
-    card.type = "button";
+  function buildSizeCard(groupName, size, flavors) {
+    const card = document.createElement("div");
     card.className = "size-card";
-    card.addEventListener("click", () => addToCart(label, size.price));
 
     const labelEl = document.createElement("span");
     labelEl.className = "size-label";
@@ -62,10 +91,30 @@
     priceEl.textContent = formatPrice(size.price);
     card.appendChild(priceEl);
 
+    let select = null;
+    if (flavors && flavors.length) {
+      select = buildFlavorSelect(flavors);
+      card.appendChild(select);
+    }
+
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "item-order-btn size-add-btn";
+    addBtn.textContent = "+ Adicionar";
+    addBtn.addEventListener("click", () => {
+      if (select && !select.value) {
+        showToast("Escolha um sabor primeiro");
+        return;
+      }
+      const label = select ? `${groupName} ${size.label} — ${select.value}` : `${groupName} ${size.label}`;
+      addToCart(label, size.price);
+    });
+    card.appendChild(addBtn);
+
     return card;
   }
 
-  function buildGroup(group) {
+  function buildGroup(group, flavors) {
     const wrap = document.createElement("div");
 
     const heading = document.createElement("div");
@@ -91,14 +140,14 @@
     if (group.items) {
       const grid = document.createElement("div");
       grid.className = "card-grid";
-      group.items.forEach((item) => grid.appendChild(buildItemCard(item, group.price)));
+      group.items.forEach((item) => grid.appendChild(buildItemCard(item, group.price, flavors)));
       wrap.appendChild(grid);
     }
 
     if (group.sizes) {
       const grid = document.createElement("div");
       grid.className = "size-grid";
-      group.sizes.forEach((size) => grid.appendChild(buildSizeCard(group.name, size)));
+      group.sizes.forEach((size) => grid.appendChild(buildSizeCard(group.name, size, flavors)));
       wrap.appendChild(grid);
     }
 
@@ -125,12 +174,12 @@
     if (category.items) {
       const grid = document.createElement("div");
       grid.className = "card-grid";
-      category.items.forEach((item) => grid.appendChild(buildItemCard(item)));
+      category.items.forEach((item) => grid.appendChild(buildItemCard(item, undefined, category.flavors)));
       section.appendChild(grid);
     }
 
     if (category.groups) {
-      category.groups.forEach((group) => section.appendChild(buildGroup(group)));
+      category.groups.forEach((group) => section.appendChild(buildGroup(group, category.flavors)));
     }
 
     return section;

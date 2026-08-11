@@ -90,6 +90,21 @@
     </div>
   </div>
 
+  <div class="cart-payment" id="cartPayment">
+    <p class="cart-delivery-label">Forma de pagamento</p>
+    <select id="paymentMethod" class="payment-select">
+      <option value="">Selecione...</option>
+      <option value="Dinheiro">Dinheiro</option>
+      <option value="Cartão de Débito">Cartão de Débito</option>
+      <option value="Cartão de Crédito">Cartão de Crédito</option>
+      <option value="Pix">Pix</option>
+    </select>
+    <div class="payment-change-wrap" id="paymentChangeWrap" hidden>
+      <label for="paymentChange">Precisa de troco para quanto? (opcional)</label>
+      <input type="text" id="paymentChange" placeholder="Ex: R$ 50,00">
+    </div>
+  </div>
+
   <div class="cart-drawer-footer">
     <p class="cart-validation-msg" id="cartValidationMsg"></p>
     <div class="cart-total-row">

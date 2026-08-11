@@ -86,6 +86,22 @@ function resetDeliveryFields() {
   const addressEl = document.getElementById("deliveryAddress");
   if (addressEl) addressEl.value = "";
   document.getElementById("deliveryAddressWrap").hidden = true;
+
+  const paymentEl = document.getElementById("paymentMethod");
+  if (paymentEl) paymentEl.value = "";
+  const changeEl = document.getElementById("paymentChange");
+  if (changeEl) changeEl.value = "";
+  document.getElementById("paymentChangeWrap").hidden = true;
+}
+
+function getPaymentMethod() {
+  const el = document.getElementById("paymentMethod");
+  return el ? el.value : "";
+}
+
+function getPaymentChange() {
+  const el = document.getElementById("paymentChange");
+  return el ? el.value.trim() : "";
 }
 
 function buildOrderMessage() {
@@ -105,6 +121,13 @@ function buildOrderMessage() {
     lines.push(`Endereço: ${address}`);
   } else {
     lines.push("Forma de entrega: Retirada no local");
+  }
+
+  const paymentMethod = getPaymentMethod();
+  const paymentChange = getPaymentChange();
+  lines.push(`Forma de pagamento: ${paymentMethod}`);
+  if (paymentMethod === "Dinheiro" && paymentChange !== "") {
+    lines.push(`Troco para: ${paymentChange}`);
   }
 
   return lines.join("\n");
@@ -132,15 +155,18 @@ function renderCart() {
   const emptyEl = document.getElementById("cartEmpty");
   const totalEl = document.getElementById("cartTotal");
   const deliveryEl = document.getElementById("cartDelivery");
+  const paymentEl = document.getElementById("cartPayment");
 
   itemsEl.innerHTML = "";
 
   if (cart.length === 0) {
     emptyEl.style.display = "block";
     deliveryEl.style.display = "none";
+    paymentEl.style.display = "none";
   } else {
     emptyEl.style.display = "none";
     deliveryEl.style.display = "block";
+    paymentEl.style.display = "block";
 
     cart.forEach((item) => {
       const row = document.createElement("div");
@@ -223,6 +249,13 @@ function updateSendButton() {
     return;
   }
 
+  if (getPaymentMethod() === "") {
+    sendBtn.classList.add("disabled");
+    sendBtn.removeAttribute("href");
+    msgEl.textContent = "Selecione a forma de pagamento para continuar.";
+    return;
+  }
+
   msgEl.textContent = "";
   sendBtn.classList.remove("disabled");
   sendBtn.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildOrderMessage())}`;
@@ -255,6 +288,13 @@ function setupCart() {
   });
 
   document.getElementById("deliveryAddress").addEventListener("input", updateSendButton);
+
+  document.getElementById("paymentMethod").addEventListener("change", (e) => {
+    document.getElementById("paymentChangeWrap").hidden = e.target.value !== "Dinheiro";
+    updateSendButton();
+  });
+
+  document.getElementById("paymentChange").addEventListener("input", updateSendButton);
 
   renderCart();
 }

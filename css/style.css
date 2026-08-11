@@ -451,6 +451,58 @@ img { max-width: 100%; display: block; }
   min-height: 1em;
 }
 
+.cart-payment {
+  flex-shrink: 0;
+  padding: 14px 20px 16px;
+  border-top: 1px solid rgba(28,23,18,0.1);
+  background: var(--cream);
+}
+
+.payment-select {
+  width: 100%;
+  border: 1.5px solid rgba(28,23,18,0.15);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  background: var(--white);
+  color: var(--black);
+  cursor: pointer;
+}
+
+.payment-select:focus {
+  outline: none;
+  border-color: var(--orange-500);
+}
+
+.payment-change-wrap {
+  margin-top: 10px;
+}
+
+.payment-change-wrap label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+
+.payment-change-wrap input {
+  width: 100%;
+  border: 1.5px solid rgba(28,23,18,0.15);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  background: var(--white);
+  color: var(--black);
+}
+
+.payment-change-wrap input:focus {
+  outline: none;
+  border-color: var(--orange-500);
+}
+
 .cart-drawer-footer {
   flex-shrink: 0;
   padding: 16px 20px 22px;
@@ -695,22 +747,22 @@ main { max-width: 1100px; margin: 0 auto; padding: 10px 16px 40px; }
 /* size-based cards (porções, sucos, vitaminas) */
 .size-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   gap: 10px;
 }
 
 .size-card {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
   width: 100%;
   background: var(--white);
   border-radius: 12px;
-  padding: 12px 14px;
+  padding: 14px;
   box-shadow: var(--shadow);
   text-align: center;
-  text-decoration: none;
   border: 1px solid rgba(28,23,18,0.06);
-  font-family: inherit;
-  cursor: pointer;
   transition: transform 0.15s;
 }
 
@@ -721,7 +773,6 @@ main { max-width: 1100px; margin: 0 auto; padding: 10px 16px 40px; }
   font-weight: 700;
   color: var(--black);
   font-size: 0.88rem;
-  margin-bottom: 4px;
 }
 
 .size-price {
@@ -729,6 +780,30 @@ main { max-width: 1100px; margin: 0 auto; padding: 10px 16px 40px; }
   font-weight: 800;
   color: var(--orange-700);
   font-size: 1.05rem;
+  margin-bottom: 4px;
+}
+
+.size-add-btn {
+  margin-top: 2px;
+  align-self: stretch;
+  justify-content: center;
+}
+
+.flavor-select {
+  width: 100%;
+  border: 1.5px solid rgba(28,23,18,0.15);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  background: var(--cream);
+  color: var(--black);
+  cursor: pointer;
+}
+
+.flavor-select:focus {
+  outline: none;
+  border-color: var(--orange-500);
 }
 
 /* ---------- Footer ---------- */
