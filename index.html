@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nosso Ponto | Cardápio Digital</title>
+<meta name="description" content="Cardápio digital do Nosso Ponto - salgados, pastelão, pizza, hambúrguer, cachorro quente, açaí, milk shake e muito mais. Peça por delivery ou venha comer no local!">
+<link rel="icon" href="assets/image.png" type="image/png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="brand">
+      <img src="assets/image.png" alt="Logo Nosso Ponto" class="brand-logo">
+      <div class="brand-text">
+        <h1>Nosso Ponto</h1>
+        <p>Cardápio Digital</p>
+      </div>
+    </div>
+    <button class="btn-cart header-cta" id="headerCartBtn" aria-label="Abrir carrinho">
+      🛒 <span>Carrinho</span>
+      <span class="cart-badge" id="cartBadgeHeader">0</span>
+    </button>
+    <button class="nav-toggle" id="navToggle" aria-label="Abrir menu de categorias" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <nav class="category-nav" id="categoryNav" aria-label="Categorias do cardápio">
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <h2>Sabor que é a nossa cara 🎶</h2>
+    <p>Adicione os itens ao carrinho e finalize seu pedido em uma única mensagem no WhatsApp — delivery ou consumo no local!</p>
+    <div class="hero-info">
+      <span class="info-pill">📍 Rua Pará, Centro — próx. Escola Manoel Bezerra</span>
+      <span class="info-pill">📞 (99) 98551-6826</span>
+      <span class="info-pill">🛵 Fazemos entregas</span>
+    </div>
+  </div>
+</section>
+
+<main id="menu"></main>
+
+<footer class="site-footer">
+  <img src="assets/image.png" alt="Logo Nosso Ponto" class="footer-logo">
+  <h3>Nosso Ponto</h3>
+  <p>Rua Pará, Centro — próximo à Escola Manoel Bezerra</p>
+  <p>Delivery e atendimento no local</p>
+  <a class="btn-whatsapp" href="https://wa.me/5599985516826?text=Ol%C3%A1%2C%20gostaria%20de%20fazer%20um%20pedido%20no%20Nosso%20Ponto!" target="_blank" rel="noopener">
+    <svg viewBox="0 0 32 32" class="wa-icon" aria-hidden="true"><path d="M16.001 3C9.373 3 4 8.373 4 15c0 2.34.653 4.527 1.785 6.392L4 29l7.79-1.75A11.94 11.94 0 0 0 16.001 27C22.628 27 28 21.627 28 15S22.628 3 16.001 3zm0 21.6c-1.98 0-3.83-.55-5.41-1.51l-.388-.23-4.62 1.038 1.06-4.5-.253-.4A9.55 9.55 0 0 1 5.4 15c0-5.847 4.755-10.6 10.601-10.6S26.6 9.153 26.6 15 21.848 24.6 16.001 24.6zm5.815-7.94c-.318-.16-1.88-.928-2.172-1.034-.291-.106-.503-.16-.715.16-.212.318-.821 1.034-1.007 1.246-.185.212-.37.239-.688.08-.318-.16-1.343-.495-2.558-1.577-.945-.843-1.583-1.885-1.768-2.203-.185-.318-.02-.49.14-.65.144-.143.318-.37.477-.556.16-.185.212-.318.318-.53.106-.212.053-.397-.027-.556-.08-.16-.715-1.72-.98-2.356-.258-.62-.52-.536-.715-.546l-.609-.011c-.212 0-.556.08-.848.397-.291.318-1.113 1.088-1.113 2.653s1.14 3.076 1.298 3.288c.16.212 2.243 3.425 5.437 4.804.76.328 1.353.524 1.815.671.762.242 1.456.208 2.005.126.612-.091 1.88-.769 2.145-1.511.265-.742.265-1.378.185-1.511-.08-.133-.291-.212-.609-.371z"/></svg>
+    (99) 98551-6826
+  </a>
+  <p class="footer-note">© 2026 Nosso Ponto. A melhor rede social ainda é uma mesa rodeada de energias.</p>
+</footer>
+
+<button class="fab-cart" id="fabCart" aria-label="Abrir carrinho">
+  🛒
+  <span class="cart-badge" id="cartBadge">0</span>
+</button>
+
+<div class="cart-overlay" id="cartOverlay"></div>
+<aside class="cart-drawer" id="cartDrawer" aria-hidden="true">
+  <div class="cart-drawer-header">
+    <h2>Seu Pedido</h2>
+    <button class="cart-close" id="cartClose" aria-label="Fechar carrinho">✕</button>
+  </div>
+
+  <div class="cart-items" id="cartItems"></div>
+  <p class="cart-empty" id="cartEmpty">Seu carrinho está vazio. Adicione itens do cardápio para começar!</p>
+
+  <div class="cart-delivery" id="cartDelivery">
+    <p class="cart-delivery-label">Como você quer receber?</p>
+    <div class="delivery-options">
+      <label class="delivery-option">
+        <input type="radio" name="deliveryType" value="local" checked>
+        Retirar no local
+      </label>
+      <label class="delivery-option">
+        <input type="radio" name="deliveryType" value="entrega">
+        Entrega (delivery)
+      </label>
+    </div>
+    <div class="delivery-address-wrap" id="deliveryAddressWrap" hidden>
+      <label for="deliveryAddress">Endereço completo para entrega</label>
+      <textarea id="deliveryAddress" rows="2" placeholder="Rua, número, bairro, ponto de referência..."></textarea>
+    </div>
+  </div>
+
+  <div class="cart-drawer-footer">
+    <p class="cart-validation-msg" id="cartValidationMsg"></p>
+    <div class="cart-total-row">
+      <span>Total</span>
+      <span id="cartTotal">R$ 0,00</span>
+    </div>
+    <a class="btn-whatsapp cart-send-btn disabled" id="cartSendBtn" target="_blank" rel="noopener">
+      <svg viewBox="0 0 32 32" class="wa-icon" aria-hidden="true"><path d="M16.001 3C9.373 3 4 8.373 4 15c0 2.34.653 4.527 1.785 6.392L4 29l7.79-1.75A11.94 11.94 0 0 0 16.001 27C22.628 27 28 21.627 28 15S22.628 3 16.001 3zm0 21.6c-1.98 0-3.83-.55-5.41-1.51l-.388-.23-4.62 1.038 1.06-4.5-.253-.4A9.55 9.55 0 0 1 5.4 15c0-5.847 4.755-10.6 10.601-10.6S26.6 9.153 26.6 15 21.848 24.6 16.001 24.6zm5.815-7.94c-.318-.16-1.88-.928-2.172-1.034-.291-.106-.503-.16-.715.16-.212.318-.821 1.034-1.007 1.246-.185.212-.37.239-.688.08-.318-.16-1.343-.495-2.558-1.577-.945-.843-1.583-1.885-1.768-2.203-.185-.318-.02-.49.14-.65.144-.143.318-.37.477-.556.16-.185.212-.318.318-.53.106-.212.053-.397-.027-.556-.08-.16-.715-1.72-.98-2.356-.258-.62-.52-.536-.715-.546l-.609-.011c-.212 0-.556.08-.848.397-.291.318-1.113 1.088-1.113 2.653s1.14 3.076 1.298 3.288c.16.212 2.243 3.425 5.437 4.804.76.328 1.353.524 1.815.671.762.242 1.456.208 2.005.126.612-.091 1.88-.769 2.145-1.511.265-.742.265-1.378.185-1.511-.08-.133-.291-.212-.609-.371z"/></svg>
+      Enviar pedido no WhatsApp
+    </a>
+    <button class="cart-clear-btn" id="cartClearBtn">Limpar carrinho</button>
+  </div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/menu-data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/script.js"></script>
+</body>
+</html>
