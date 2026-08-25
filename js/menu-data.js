@@ -117,7 +117,7 @@ const MENU_DATA = [
     title: "Porções — Batata Frita",
     groups: [
       {
-        name: "Simples",
+        name: "Batata Frita Simples",
         desc: "Batata simples com sal.",
         sizes: [
           { label: "Pequena (P)", price: 12 },
@@ -125,7 +125,7 @@ const MENU_DATA = [
         ]
       },
       {
-        name: "Completa",
+        name: "Batata Frita Completa",
         desc: "Com bacon, calabresa e cheddar.",
         sizes: [
           { label: "Pequena (P)", price: 15 },
@@ -142,7 +142,7 @@ const MENU_DATA = [
     flavors: ["Abacate", "Acerola", "Banana", "Cajá", "Cupuaçu", "Goiaba", "Maracujá"],
     groups: [
       {
-        name: "Vitaminas",
+        name: "Vitamina",
         sizes: [
           { label: "300ml", price: 9 },
           { label: "400ml", price: 10 },
@@ -151,7 +151,7 @@ const MENU_DATA = [
         ]
       },
       {
-        name: "Sucos",
+        name: "Suco",
         sizes: [
           { label: "300ml", price: 6 },
           { label: "400ml", price: 7 },
