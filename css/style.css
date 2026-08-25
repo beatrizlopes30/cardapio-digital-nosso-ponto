@@ -672,7 +672,8 @@ main { max-width: 1100px; margin: 0 auto; padding: 10px 16px 40px; }
 .group-desc {
   margin: -6px 0 12px;
   font-size: 0.85rem;
-  opacity: 0.7;
+  color: var(--black);
+  opacity: 1;
 }
 
 .card-grid {
@@ -715,7 +716,7 @@ main { max-width: 1100px; margin: 0 auto; padding: 10px 16px 40px; }
 .item-desc {
   font-size: 0.83rem;
   color: var(--black);
-  opacity: 0.68;
+  opacity: 1;
   flex-grow: 1;
   line-height: 1.4;
 }
@@ -805,6 +806,92 @@ main { max-width: 1100px; margin: 0 auto; padding: 10px 16px 40px; }
   outline: none;
   border-color: var(--orange-500);
 }
+
+/* ---------- Product option groups (sabor, cobertura, frutas, etc.) ---------- */
+.option-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.option-group-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--black);
+  opacity: 0.75;
+}
+
+.option-text-input {
+  width: 100%;
+  border: 1.5px solid rgba(28,23,18,0.15);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  background: var(--cream);
+  color: var(--black);
+}
+
+.option-text-input:focus {
+  outline: none;
+  border-color: var(--orange-500);
+}
+
+.option-checkbox-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+
+.option-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--black);
+  cursor: pointer;
+}
+
+.option-checkbox-item input { accent-color: var(--orange-600); cursor: pointer; }
+
+/* ---------- Quantity stepper on menu cards ---------- */
+.menu-qty {
+  align-self: flex-start;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.size-card .menu-qty {
+  align-self: stretch;
+  justify-content: center;
+}
+
+.qty-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ---------- Unavailable products ---------- */
+.item-card.is-unavailable,
+.size-card.is-unavailable {
+  opacity: 0.6;
+  filter: grayscale(0.4);
+}
+
+.unavailable-badge {
+  align-self: flex-start;
+  background: #c0392b;
+  color: var(--white);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.size-card .unavailable-badge { align-self: center; }
 
 /* ---------- Footer ---------- */
 .site-footer {

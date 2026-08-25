@@ -70,6 +70,11 @@ function cartCount() {
   return cart.reduce((sum, i) => sum + i.qty, 0);
 }
 
+function cartQty(key) {
+  const item = cart.find((i) => i.key === key);
+  return item ? item.qty : 0;
+}
+
 function getDeliveryType() {
   const checked = document.querySelector('input[name="deliveryType"]:checked');
   return checked ? checked.value : "local";
@@ -229,6 +234,8 @@ function renderCart() {
 
   totalEl.textContent = formatBRL(cartTotal());
   updateSendButton();
+
+  if (typeof refreshMenuQuantities === "function") refreshMenuQuantities();
 }
 
 function updateSendButton() {
