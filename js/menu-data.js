@@ -25,56 +25,56 @@ const MENU_DATA = [
         name: "Simples",
         price: 9,
         items: [
-          { name: "Carne", desc: "Carne moída" },
-          { name: "Calabresa", desc: "Calabresa em cubos" },
-          { name: "Pizza", desc: "Queijo, presunto e orégano" },
-          { name: "Frango", desc: "Frango desfiado" },
-          { name: "Queijo", desc: "Mussarela ou tradicional" },
+          { name: "Pastel de Carne", desc: "Carne moída" },
+          { name: "Pastel de Calabresa", desc: "Calabresa em cubos" },
+          { name: "Pastel de Pizza", desc: "Queijo, presunto e orégano" },
+          { name: "Pastel de Frango", desc: "Frango desfiado" },
+          { name: "Pastel de Queijo", desc: "Mussarela ou tradicional" },
         ]
       },
       {
         name: "Doce",
         price: 11,
         items: [
-          { name: "Doce de Leite", desc: "Doce de leite com queijo" },
-          { name: "Romeu e Julieta", desc: "Queijo com goiabada" },
-          { name: "Prestígio", desc: "Chocolate, queijo e coco ralado" },
+          { name: "Pastel de Doce de Leite", desc: "Doce de leite com queijo" },
+          { name: "Pastel Romeu e Julieta", desc: "Queijo com goiabada" },
+          { name: "Pastel Prestígio", desc: "Chocolate, queijo e coco ralado" },
         ]
       },
       {
         name: "Especiais de Carne",
         price: 11,
         items: [
-          { name: "Carne com Catupiry" },
-          { name: "Carne com Cheddar" },
-          { name: "Carne com Queijo" },
+          { name: "Pastel de Carne com Catupiry" },
+          { name: "Pastel de Carne com Cheddar" },
+          { name: "Pastel de Carne com Queijo" },
         ]
       },
       {
         name: "Especiais de Frango",
         price: 11,
         items: [
-          { name: "Frango com Catupiry" },
-          { name: "Frango com Cheddar" },
-          { name: "Frango com Queijo" },
+          { name: "Pastel de Frango com Catupiry" },
+          { name: "Pastel de Frango com Cheddar" },
+          { name: "Pastel de Frango com Queijo" },
         ]
       },
       {
         name: "Especiais de Carne de Sol",
         price: 11,
         items: [
-          { name: "Carne de Sol com Cheddar" },
-          { name: "Carne de Sol com Queijo" },
-          { name: "Carne de Sol com Catupiry" },
+          { name: "Pastel de Carne de Sol com Cheddar" },
+          { name: "Pastel de Carne de Sol com Queijo" },
+          { name: "Pastel de Carne de Sol com Catupiry" },
         ]
       },
       {
         name: "Especiais de Calabresa",
         price: 11,
         items: [
-          { name: "Calabresa com Catupiry" },
-          { name: "Calabresa com Cheddar" },
-          { name: "Calabresa com Queijo" },
+          { name: "Pastel de Calabresa com Catupiry" },
+          { name: "Pastel de Calabresa com Cheddar" },
+          { name: "Pastel de Calabresa com Queijo" },
         ]
       },
     ]
