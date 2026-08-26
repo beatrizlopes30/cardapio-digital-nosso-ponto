@@ -238,6 +238,18 @@ const MENU_DATA = [
     ]
   },
   {
+    id: "diversos",
+    icon: "🧺",
+    title: "Diversos",
+    items: [
+      { name: "Cremozim", price: 2 },
+      { name: "Côco Fruta", price: 7 },
+      { name: "Gelo", price: 7 },
+      { name: "Sorvete 1L", price: 16 },
+      { name: "Sorvete 2L", price: 22 },
+    ]
+  },
+  {
     id: "bebidas",
     icon: "🧊",
     title: "Bebidas",

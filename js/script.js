@@ -179,16 +179,20 @@
     });
   }
 
-  function render() {
-    buildNav();
+  function renderMenu() {
+    menuEl.innerHTML = "";
     MENU_DATA.forEach((category) => menuEl.appendChild(buildCategory(category)));
   }
 
+  let scrollObserver = null;
+
   function setupScrollSpy() {
+    if (scrollObserver) scrollObserver.disconnect();
+
     const pills = Array.from(navEl.querySelectorAll(".nav-pill"));
     const sections = MENU_DATA.map((c) => document.getElementById(c.id));
 
-    const observer = new IntersectionObserver(
+    scrollObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
@@ -200,7 +204,7 @@
       { rootMargin: "-40% 0px -50% 0px", threshold: 0 }
     );
 
-    sections.forEach((s) => s && observer.observe(s));
+    sections.forEach((s) => s && scrollObserver.observe(s));
   }
 
   function setupMobileNav() {
@@ -218,7 +222,17 @@
     });
   }
 
-  render();
+  buildNav();
+  renderMenu();
   setupScrollSpy();
   setupMobileNav();
+
+  // Repinta o cardápio sempre que a dona remover/reativar um produto no
+  // Menu Administrativo — em tempo real, via Firebase (ou localStorage se
+  // o Firebase não estiver configurado; ver js/menu-sync.js).
+  subscribeRemovedProducts((removedIds) => {
+    applyMenuOverrides(removedIds);
+    renderMenu();
+    setupScrollSpy();
+  });
 })();

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menu Administrativo | Nosso Ponto</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/image.png" type="image/png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="admin-page">
+
+<header class="admin-header">
+  <div class="admin-header-inner">
+    <div>
+      <h1>Menu Administrativo</h1>
+      <p>Ativar ou remover produtos do cardápio</p>
+    </div>
+    <a class="admin-back-link" href="index.html">← Ver cardápio</a>
+  </div>
+</header>
+
+<main class="admin-main">
+
+  <section id="adminLogin" class="admin-login-card">
+    <h2>Acesso restrito</h2>
+    <p>Digite a senha para gerenciar o cardápio.</p>
+    <form id="adminLoginForm">
+      <input type="password" id="adminPassword" placeholder="Senha" autocomplete="current-password">
+      <button type="submit" class="admin-login-btn">Entrar</button>
+      <p class="admin-login-error" id="adminLoginError"></p>
+    </form>
+  </section>
+
+  <section id="adminPanel" hidden>
+    <div class="admin-notice" id="adminSyncNotice"></div>
+
+    <div class="admin-toolbar">
+      <input type="search" id="adminSearch" class="admin-search" placeholder="Buscar produto...">
+      <div class="admin-toolbar-actions">
+        <button type="button" class="admin-btn" id="adminRestoreAllBtn">Restaurar todos</button>
+        <button type="button" class="admin-btn" id="adminLogoutBtn">Sair</button>
+      </div>
+    </div>
+
+    <div id="adminList"></div>
+    <p class="admin-empty" id="adminEmpty" hidden>Nenhum produto encontrado.</p>
+  </section>
+
+</main>
+
+<script src="js/menu-data.js"></script>
+<script src="js/menu-catalog.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="js/menu-sync.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
