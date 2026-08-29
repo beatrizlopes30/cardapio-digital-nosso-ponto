@@ -1,0 +1,13 @@
+{
+  "rules": {
+    "removedProducts": {
+      ".read": true,
+      ".write": true
+    },
+    "orders": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": ["dateKey", "createdAt"]
+    }
+  }
+}

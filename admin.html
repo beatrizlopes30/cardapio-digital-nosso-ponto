@@ -33,18 +33,61 @@
   </section>
 
   <section id="adminPanel" hidden>
-    <div class="admin-notice" id="adminSyncNotice"></div>
-
-    <div class="admin-toolbar">
-      <input type="search" id="adminSearch" class="admin-search" placeholder="Buscar produto...">
-      <div class="admin-toolbar-actions">
-        <button type="button" class="admin-btn" id="adminRestoreAllBtn">Restaurar todos</button>
-        <button type="button" class="admin-btn" id="adminLogoutBtn">Sair</button>
-      </div>
+    <div class="admin-tabs">
+      <button type="button" class="admin-tab active" id="tabProductsBtn">Produtos</button>
+      <button type="button" class="admin-tab" id="tabStatsBtn">Pedidos &amp; Estatísticas</button>
+      <button type="button" class="admin-btn admin-logout-btn" id="adminLogoutBtn">Sair</button>
     </div>
 
-    <div id="adminList"></div>
-    <p class="admin-empty" id="adminEmpty" hidden>Nenhum produto encontrado.</p>
+    <div id="tabProducts">
+      <div class="admin-notice" id="adminSyncNotice"></div>
+
+      <div class="admin-toolbar">
+        <input type="search" id="adminSearch" class="admin-search" placeholder="Buscar produto...">
+        <div class="admin-toolbar-actions">
+          <button type="button" class="admin-btn" id="adminRestoreAllBtn">Restaurar todos</button>
+        </div>
+      </div>
+
+      <div id="adminList"></div>
+      <p class="admin-empty" id="adminEmpty" hidden>Nenhum produto encontrado.</p>
+    </div>
+
+    <div id="tabStats" hidden>
+      <div class="admin-notice" id="statsSyncNotice"></div>
+
+      <div class="admin-toolbar">
+        <select id="statsPeriod" class="payment-select stats-period-select">
+          <option value="today">Hoje</option>
+          <option value="7">Últimos 7 dias</option>
+          <option value="30">Últimos 30 dias</option>
+          <option value="all">Todo o período</option>
+        </select>
+      </div>
+
+      <div class="stats-cards" id="statsCards"></div>
+
+      <div class="stats-columns">
+        <div class="stats-block">
+          <h2>Produtos mais vendidos</h2>
+          <div id="statsTopProducts"></div>
+        </div>
+        <div class="stats-block">
+          <h2>Formas de entrega</h2>
+          <div id="statsDeliveryBreakdown"></div>
+        </div>
+        <div class="stats-block">
+          <h2>Formas de pagamento</h2>
+          <div id="statsPaymentBreakdown"></div>
+        </div>
+      </div>
+
+      <div class="stats-block">
+        <h2>Pedidos recentes</h2>
+        <div id="statsOrdersList"></div>
+        <p class="admin-empty" id="statsOrdersEmpty" hidden>Nenhum pedido no período selecionado.</p>
+      </div>
+    </div>
   </section>
 
 </main>
@@ -55,6 +98,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="js/menu-sync.js"></script>
+<script src="js/orders.js"></script>
 <script src="js/admin.js"></script>
+<script src="js/admin-stats.js"></script>
 </body>
 </html>

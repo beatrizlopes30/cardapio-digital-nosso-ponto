@@ -81,6 +81,10 @@
         Retirar no local
       </label>
       <label class="delivery-option">
+        <input type="radio" name="deliveryType" value="mesa">
+        Comer no local (mesa)
+      </label>
+      <label class="delivery-option">
         <input type="radio" name="deliveryType" value="entrega">
         Entrega (delivery)
       </label>
@@ -88,6 +92,10 @@
     <div class="delivery-address-wrap" id="deliveryAddressWrap" hidden>
       <label for="deliveryAddress">Endereço completo para entrega</label>
       <textarea id="deliveryAddress" rows="2" placeholder="Rua, número, bairro, ponto de referência..."></textarea>
+    </div>
+    <div class="delivery-address-wrap" id="tableSelectWrap" hidden>
+      <label for="tableNumber">Número da mesa</label>
+      <input type="number" id="tableNumber" class="option-text-input" inputmode="numeric" min="1" max="99" placeholder="Ex: 5">
     </div>
   </div>
 
@@ -128,6 +136,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="js/menu-sync.js"></script>
+<script src="js/orders.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/product-options.js"></script>
 <script src="js/qty-control.js"></script>

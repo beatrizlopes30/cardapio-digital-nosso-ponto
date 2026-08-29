@@ -21,6 +21,10 @@
   const restoreAllBtn = document.getElementById("adminRestoreAllBtn");
   const logoutBtn = document.getElementById("adminLogoutBtn");
   const syncNoticeEl = document.getElementById("adminSyncNotice");
+  const tabProductsBtn = document.getElementById("tabProductsBtn");
+  const tabStatsBtn = document.getElementById("tabStatsBtn");
+  const tabProducts = document.getElementById("tabProducts");
+  const tabStats = document.getElementById("tabStats");
 
   let currentRemovedIds = [];
 
@@ -176,6 +180,21 @@
   });
 
   searchInput.addEventListener("input", renderList);
+
+  tabProductsBtn.addEventListener("click", () => {
+    tabProductsBtn.classList.add("active");
+    tabStatsBtn.classList.remove("active");
+    tabProducts.hidden = false;
+    tabStats.hidden = true;
+  });
+
+  tabStatsBtn.addEventListener("click", () => {
+    tabStatsBtn.classList.add("active");
+    tabProductsBtn.classList.remove("active");
+    tabStats.hidden = false;
+    tabProducts.hidden = true;
+    if (typeof refreshStats === "function") refreshStats();
+  });
 
   // Mantém a lista de removidos sempre atualizada (inclusive vinda de
   // outro aparelho ou de outra aba), mesmo antes do login.

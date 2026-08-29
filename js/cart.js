@@ -85,12 +85,20 @@ function getDeliveryAddress() {
   return el ? el.value.trim() : "";
 }
 
+function getTableNumber() {
+  const el = document.getElementById("tableNumber");
+  return el ? el.value.trim() : "";
+}
+
 function resetDeliveryFields() {
   const localRadio = document.querySelector('input[name="deliveryType"][value="local"]');
   if (localRadio) localRadio.checked = true;
   const addressEl = document.getElementById("deliveryAddress");
   if (addressEl) addressEl.value = "";
   document.getElementById("deliveryAddressWrap").hidden = true;
+  const tableEl = document.getElementById("tableNumber");
+  if (tableEl) tableEl.value = "";
+  document.getElementById("tableSelectWrap").hidden = true;
 
   const paymentEl = document.getElementById("paymentMethod");
   if (paymentEl) paymentEl.value = "";
@@ -124,6 +132,9 @@ function buildOrderMessage() {
   if (deliveryType === "entrega") {
     lines.push("Forma de entrega: Delivery");
     lines.push(`Endereço: ${address}`);
+  } else if (deliveryType === "mesa") {
+    lines.push("Forma de entrega: Comer no local");
+    lines.push(`Mesa: ${getTableNumber()}`);
   } else {
     lines.push("Forma de entrega: Retirada no local");
   }
@@ -256,6 +267,13 @@ function updateSendButton() {
     return;
   }
 
+  if (getDeliveryType() === "mesa" && getTableNumber() === "") {
+    sendBtn.classList.add("disabled");
+    sendBtn.removeAttribute("href");
+    msgEl.textContent = "Informe o número da mesa para continuar.";
+    return;
+  }
+
   if (getPaymentMethod() === "") {
     sendBtn.classList.add("disabled");
     sendBtn.removeAttribute("href");
@@ -289,12 +307,15 @@ function setupCart() {
 
   document.querySelectorAll('input[name="deliveryType"]').forEach((radio) => {
     radio.addEventListener("change", () => {
-      document.getElementById("deliveryAddressWrap").hidden = getDeliveryType() !== "entrega";
+      const type = getDeliveryType();
+      document.getElementById("deliveryAddressWrap").hidden = type !== "entrega";
+      document.getElementById("tableSelectWrap").hidden = type !== "mesa";
       updateSendButton();
     });
   });
 
   document.getElementById("deliveryAddress").addEventListener("input", updateSendButton);
+  document.getElementById("tableNumber").addEventListener("input", updateSendButton);
 
   document.getElementById("paymentMethod").addEventListener("change", (e) => {
     document.getElementById("paymentChangeWrap").hidden = e.target.value !== "Dinheiro";
@@ -302,6 +323,21 @@ function setupCart() {
   });
 
   document.getElementById("paymentChange").addEventListener("input", updateSendButton);
+
+  document.getElementById("cartSendBtn").addEventListener("click", (e) => {
+    if (e.currentTarget.classList.contains("disabled")) return;
+    if (typeof recordOrder !== "function") return;
+    const deliveryType = getDeliveryType();
+    recordOrder({
+      items: cart.map((i) => ({ name: i.name, price: i.price, qty: i.qty })),
+      total: cartTotal(),
+      deliveryType,
+      tableNumber: deliveryType === "mesa" ? getTableNumber() : null,
+      address: deliveryType === "entrega" ? getDeliveryAddress() : null,
+      paymentMethod: getPaymentMethod(),
+      paymentChange: getPaymentMethod() === "Dinheiro" ? getPaymentChange() || null : null,
+    }).catch((err) => console.warn("Não foi possível registrar o pedido para as estatísticas.", err));
+  });
 
   renderCart();
 }
