@@ -2,6 +2,8 @@
 // Cada categoria pode ter "items" diretos e/ou "groups" (subseções com preço próprio)
 
 const WHATSAPP_NUMBER = "5599985516826";
+const PIX_KEY = "99992051876";
+const PIX_HOLDER = "Leudiane Pinheiro Soares";
 
 const MENU_DATA = [
   {

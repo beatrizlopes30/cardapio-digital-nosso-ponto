@@ -105,6 +105,7 @@ function resetDeliveryFields() {
   const changeEl = document.getElementById("paymentChange");
   if (changeEl) changeEl.value = "";
   document.getElementById("paymentChangeWrap").hidden = true;
+  document.getElementById("pixKeyWrap").hidden = true;
 }
 
 function getPaymentMethod() {
@@ -144,6 +145,10 @@ function buildOrderMessage() {
   lines.push(`Forma de pagamento: ${paymentMethod}`);
   if (paymentMethod === "Dinheiro" && paymentChange !== "") {
     lines.push(`Troco para: ${paymentChange}`);
+  }
+  if (paymentMethod === "Pix") {
+    lines.push(`Chave Pix: ${PIX_KEY} (${PIX_HOLDER})`);
+    lines.push("Aguardo comprovante da confirmação do seu pedido. Agradecemos a compreensão.");
   }
 
   return lines.join("\n");
@@ -319,6 +324,11 @@ function setupCart() {
 
   document.getElementById("paymentMethod").addEventListener("change", (e) => {
     document.getElementById("paymentChangeWrap").hidden = e.target.value !== "Dinheiro";
+    const pixWrap = document.getElementById("pixKeyWrap");
+    pixWrap.hidden = e.target.value !== "Pix";
+    if (e.target.value === "Pix") {
+      document.getElementById("pixKeyText").textContent = `${PIX_KEY} — ${PIX_HOLDER}`;
+    }
     updateSendButton();
   });
 
