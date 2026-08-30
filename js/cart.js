@@ -332,6 +332,12 @@ function setupCart() {
     updateSendButton();
   });
 
+  document.getElementById("pixCopyBtn").addEventListener("click", () => {
+    navigator.clipboard.writeText(PIX_KEY).then(() => {
+      showToast("Chave Pix copiada!");
+    });
+  });
+
   document.getElementById("paymentChange").addEventListener("input", updateSendButton);
 
   document.getElementById("cartSendBtn").addEventListener("click", (e) => {

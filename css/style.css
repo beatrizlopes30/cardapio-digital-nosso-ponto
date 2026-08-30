@@ -498,6 +498,40 @@ img { max-width: 100%; display: block; }
   margin-bottom: 4px;
 }
 
+.pix-key-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1.5px solid rgba(28,23,18,0.15);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: var(--white);
+}
+
+.pix-key-row p {
+  flex: 1;
+  margin: 0;
+  font-size: 0.85rem;
+  word-break: break-word;
+}
+
+.pix-copy-btn {
+  flex-shrink: 0;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  background: var(--orange-500);
+  color: var(--white);
+}
+
+.pix-copy-btn:hover {
+  opacity: 0.9;
+}
+
 .cart-drawer-footer {
   flex-shrink: 0;
   padding: 16px 20px 22px;
