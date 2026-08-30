@@ -197,17 +197,17 @@ const MENU_DATA = [
     id: "acai",
     icon: "🍨",
     title: "Açaí",
-    subtitle: "Monte do seu jeito! Frutas: banana, maçã, uva · Adicionais com preço à parte, some conforme a quantidade escolhida",
+    subtitle: "Já vem completo! Frutas (banana, maçã, uva) inclusas sem custo · Os itens abaixo são ADICIONAIS opcionais, pagos à parte, e somam ao preço conforme a quantidade escolhida",
     extraOptions: [
       {
         key: "frutas",
-        label: "Frutas",
+        label: "Frutas (inclusas, sem custo extra)",
         type: "checkbox",
         options: ["Banana", "Maçã", "Uva"]
       },
       {
         key: "adicionais",
-        label: "Adicionais",
+        label: "Adicionais (opcionais — pagos à parte)",
         type: "priced-checkbox",
         options: [
           { name: "Granulado", price: 1, unit: "a colher" },
