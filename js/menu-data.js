@@ -197,7 +197,7 @@ const MENU_DATA = [
     id: "acai",
     icon: "🍨",
     title: "Açaí",
-    subtitle: "Já vem completo! Frutas (banana, maçã, uva) inclusas sem custo · Os itens abaixo são ADICIONAIS opcionais, pagos à parte, e somam ao preço conforme a quantidade escolhida",
+    subtitle: "Já vem completo! Frutas (banana, maçã, uva), granola, leite em pó e tapioca inclusos sem custo · Peça A MAIS ou adicione outros itens abaixo — pagos à parte, somam ao preço conforme a quantidade escolhida",
     extraOptions: [
       {
         key: "frutas",
@@ -207,16 +207,16 @@ const MENU_DATA = [
       },
       {
         key: "adicionais",
-        label: "Adicionais (opcionais — pagos à parte)",
+        label: "Adicionais (a mais ou extras — pagos à parte)",
         type: "priced-checkbox",
         options: [
+          { name: "Granola", price: 2, unit: "a colher", freeQty: 1 },
+          { name: "Leite em pó", price: 2, unit: "a colher", freeQty: 1 },
+          { name: "Tapioca", price: 1, unit: "a colher", freeQty: 1 },
           { name: "Granulado", price: 1, unit: "a colher" },
           { name: "Marshmallow", price: 1, unit: "a unidade" },
           { name: "Jujuba", price: 1, unit: "a colher" },
-          { name: "Granola", price: 2, unit: "a colher" },
           { name: "Leite condensado", price: 2, unit: "" },
-          { name: "Tapioca", price: 1, unit: "a colher" },
-          { name: "Leite em pó", price: 2, unit: "a colher" },
           { name: "M&M", price: 1, unit: "a colher" },
         ]
       }

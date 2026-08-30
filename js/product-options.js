@@ -84,10 +84,13 @@ function buildCheckboxGroup(group, onAnyChange) {
 
 // Adicionais com preço por unidade/colher (ex: coberturas de açaí). Cada
 // opção tem sua própria quantidade, e o total soma qty * price de todas.
+// `freeQty` (opcional) é a quantidade que já vem inclusa sem custo — só a
+// parte que exceder esse valor entra no preço (ex: 1ª colher de granola
+// já vem no açaí, a partir da 2ª colher cobra-se o preço unitário).
 function buildPricedCheckboxGroup(group, onAnyChange) {
   const list = document.createElement("div");
   list.className = "option-priced-list";
-  const rows = group.options.map((opt) => ({ opt, qty: 0 }));
+  const rows = group.options.map((opt) => ({ opt, qty: opt.freeQty || 0 }));
 
   rows.forEach((row) => {
     const item = document.createElement("div");
@@ -96,7 +99,9 @@ function buildPricedCheckboxGroup(group, onAnyChange) {
     const info = document.createElement("span");
     info.className = "option-priced-info";
     const priceLabel = row.opt.price.toFixed(2).replace(".", ",");
-    info.textContent = `${row.opt.name} — R$ ${priceLabel} ${row.opt.unit || ""}`.trim();
+    info.textContent = row.opt.freeQty
+      ? `${row.opt.name} — ${row.opt.freeQty}x inclusa(s), R$ ${priceLabel} ${row.opt.unit || ""} a mais`.trim()
+      : `${row.opt.name} — R$ ${priceLabel} ${row.opt.unit || ""}`.trim();
     item.appendChild(info);
 
     const stepper = document.createElement("div");
@@ -110,7 +115,7 @@ function buildPricedCheckboxGroup(group, onAnyChange) {
 
     const qtyEl = document.createElement("span");
     qtyEl.className = "qty-value qty-value-sm";
-    qtyEl.textContent = "0";
+    qtyEl.textContent = String(row.qty);
 
     const plusBtn = document.createElement("button");
     plusBtn.type = "button";
@@ -148,10 +153,14 @@ function buildPricedCheckboxGroup(group, onAnyChange) {
     el: list,
     getValue: () =>
       rows
-        .filter((r) => r.qty > 0)
-        .map((r) => `${r.opt.name} x${r.qty}`)
+        .filter((r) => r.qty !== (r.opt.freeQty || 0))
+        .map((r) => {
+          const free = r.opt.freeQty || 0;
+          if (r.qty > free) return `${r.opt.name} +${r.qty - free}`;
+          return `Sem ${r.opt.name}`;
+        })
         .join(", "),
-    getPriceExtra: () => rows.reduce((sum, r) => sum + r.qty * r.opt.price, 0),
+    getPriceExtra: () => rows.reduce((sum, r) => sum + Math.max(r.qty - (r.opt.freeQty || 0), 0) * r.opt.price, 0),
   };
 }
 
