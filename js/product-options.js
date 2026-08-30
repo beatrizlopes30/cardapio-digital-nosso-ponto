@@ -82,10 +82,84 @@ function buildCheckboxGroup(group, onAnyChange) {
   };
 }
 
+// Adicionais com preço por unidade/colher (ex: coberturas de açaí). Cada
+// opção tem sua própria quantidade, e o total soma qty * price de todas.
+function buildPricedCheckboxGroup(group, onAnyChange) {
+  const list = document.createElement("div");
+  list.className = "option-priced-list";
+  const rows = group.options.map((opt) => ({ opt, qty: 0 }));
+
+  rows.forEach((row) => {
+    const item = document.createElement("div");
+    item.className = "option-priced-item";
+
+    const info = document.createElement("span");
+    info.className = "option-priced-info";
+    const priceLabel = row.opt.price.toFixed(2).replace(".", ",");
+    info.textContent = `${row.opt.name} — R$ ${priceLabel} ${row.opt.unit || ""}`.trim();
+    item.appendChild(info);
+
+    const stepper = document.createElement("div");
+    stepper.className = "option-priced-stepper";
+
+    const minusBtn = document.createElement("button");
+    minusBtn.type = "button";
+    minusBtn.className = "qty-btn qty-btn-sm";
+    minusBtn.textContent = "−";
+    minusBtn.setAttribute("aria-label", `Diminuir ${row.opt.name}`);
+
+    const qtyEl = document.createElement("span");
+    qtyEl.className = "qty-value qty-value-sm";
+    qtyEl.textContent = "0";
+
+    const plusBtn = document.createElement("button");
+    plusBtn.type = "button";
+    plusBtn.className = "qty-btn qty-btn-sm";
+    plusBtn.textContent = "+";
+    plusBtn.setAttribute("aria-label", `Aumentar ${row.opt.name}`);
+
+    function refresh() {
+      qtyEl.textContent = row.qty;
+      minusBtn.disabled = row.qty <= 0;
+    }
+
+    minusBtn.addEventListener("click", () => {
+      if (row.qty <= 0) return;
+      row.qty -= 1;
+      refresh();
+      onAnyChange && onAnyChange();
+    });
+
+    plusBtn.addEventListener("click", () => {
+      row.qty += 1;
+      refresh();
+      onAnyChange && onAnyChange();
+    });
+
+    refresh();
+    stepper.appendChild(minusBtn);
+    stepper.appendChild(qtyEl);
+    stepper.appendChild(plusBtn);
+    item.appendChild(stepper);
+    list.appendChild(item);
+  });
+
+  return {
+    el: list,
+    getValue: () =>
+      rows
+        .filter((r) => r.qty > 0)
+        .map((r) => `${r.opt.name} x${r.qty}`)
+        .join(", "),
+    getPriceExtra: () => rows.reduce((sum, r) => sum + r.qty * r.opt.price, 0),
+  };
+}
+
 const OPTION_GROUP_BUILDERS = {
   select: buildSelectGroup,
   text: buildTextGroup,
   checkbox: buildCheckboxGroup,
+  "priced-checkbox": buildPricedCheckboxGroup,
 };
 
 function createOptionControls(optionGroups, onAnyChange) {
@@ -96,17 +170,17 @@ function createOptionControls(optionGroups, onAnyChange) {
     const groupWrap = document.createElement("div");
     groupWrap.className = "option-group";
 
-    const labelTag = group.type === "checkbox" ? "span" : "label";
+    const labelTag = group.type === "checkbox" || group.type === "priced-checkbox" ? "span" : "label";
     const label = document.createElement(labelTag);
     label.className = "option-group-label";
     label.textContent = group.label;
     groupWrap.appendChild(label);
 
     const build = OPTION_GROUP_BUILDERS[group.type] || buildSelectGroup;
-    const { el, getValue } = build(group, onAnyChange);
+    const { el, getValue, getPriceExtra } = build(group, onAnyChange);
     groupWrap.appendChild(el);
 
-    controllers.push({ group, getValue });
+    controllers.push({ group, getValue, getPriceExtra: getPriceExtra || (() => 0) });
     wrapper.appendChild(groupWrap);
   });
 
@@ -115,6 +189,10 @@ function createOptionControls(optionGroups, onAnyChange) {
 
 function findMissingRequired(controllers) {
   return controllers.find((c) => c.group.required && !c.getValue());
+}
+
+function getControllersExtra(controllers) {
+  return controllers.reduce((sum, c) => sum + (c.getPriceExtra ? c.getPriceExtra() : 0), 0);
 }
 
 function buildLabelWithOptions(baseName, controllers) {

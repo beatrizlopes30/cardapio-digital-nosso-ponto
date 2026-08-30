@@ -197,7 +197,7 @@ const MENU_DATA = [
     id: "acai",
     icon: "🍨",
     title: "Açaí",
-    subtitle: "Monte do seu jeito! Acompanhamentos: leite em pó, leite condensado, granola, tapioca · Frutas: banana, maçã, uva",
+    subtitle: "Monte do seu jeito! Frutas: banana, maçã, uva · Adicionais com preço à parte, some conforme a quantidade escolhida",
     extraOptions: [
       {
         key: "frutas",
@@ -206,10 +206,19 @@ const MENU_DATA = [
         options: ["Banana", "Maçã", "Uva"]
       },
       {
-        key: "acompanhamentos",
-        label: "Acompanhamentos",
-        type: "checkbox",
-        options: ["Leite em pó", "Leite condensado", "Granola", "Tapioca"]
+        key: "adicionais",
+        label: "Adicionais",
+        type: "priced-checkbox",
+        options: [
+          { name: "Granulado", price: 1, unit: "a colher" },
+          { name: "Marshmallow", price: 1, unit: "a unidade" },
+          { name: "Jujuba", price: 1, unit: "a colher" },
+          { name: "Granola", price: 2, unit: "a colher" },
+          { name: "Leite condensado", price: 2, unit: "" },
+          { name: "Tapioca", price: 1, unit: "a colher" },
+          { name: "Leite em pó", price: 2, unit: "a colher" },
+          { name: "M&M", price: 1, unit: "a colher" },
+        ]
       }
     ],
     items: [

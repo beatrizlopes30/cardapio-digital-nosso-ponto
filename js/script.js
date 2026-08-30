@@ -56,9 +56,10 @@
     card.appendChild(wrapper);
 
     const getLabel = () => buildLabelWithOptions(item.name, controllers);
-    const getKey = () => cartKey(getLabel(), price);
+    const getPrice = () => price + getControllersExtra(controllers);
+    const getKey = () => cartKey(getLabel(), getPrice());
 
-    stepperRef = buildQtyControl(getKey, () => price, getLabel, controllers, available);
+    stepperRef = buildQtyControl(getKey, getPrice, getLabel, controllers, available);
     card.appendChild(stepperRef.el);
 
     return card;
@@ -89,9 +90,10 @@
 
     const baseLabel = `${groupName} ${size.label}`;
     const getLabel = () => buildLabelWithOptions(baseLabel, controllers);
-    const getKey = () => cartKey(getLabel(), size.price);
+    const getPrice = () => size.price + getControllersExtra(controllers);
+    const getKey = () => cartKey(getLabel(), getPrice());
 
-    stepperRef = buildQtyControl(getKey, () => size.price, getLabel, controllers, available);
+    stepperRef = buildQtyControl(getKey, getPrice, getLabel, controllers, available);
     card.appendChild(stepperRef.el);
 
     return card;
