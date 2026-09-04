@@ -953,9 +953,9 @@ main { max-width: 1100px; margin: 0 auto; padding: 10px 16px 40px; }
   right: 10px;
   background: #c0392b;
   color: var(--white);
-  font-size: 0.68rem;
+  font-size: 0.78rem;
   font-weight: 800;
-  padding: 4px 9px;
+  padding: 5px 12px;
   border-radius: 999px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   z-index: 1;
