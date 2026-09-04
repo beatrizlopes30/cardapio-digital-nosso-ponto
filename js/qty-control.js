@@ -43,7 +43,7 @@ function buildQtyControl(getKey, getPrice, getLabel, controllers, available) {
 
   plusBtn.addEventListener("click", () => {
     if (!available) {
-      showToast("Produto indisponível no momento");
+      showToast("Produto esgotado");
       return;
     }
     const missing = findMissingRequired(controllers);

@@ -13,7 +13,7 @@
     if (available) return;
     const badge = document.createElement("span");
     badge.className = "unavailable-badge";
-    badge.textContent = "Indisponível no momento";
+    badge.textContent = "Esgotado";
     card.appendChild(badge);
   }
 
