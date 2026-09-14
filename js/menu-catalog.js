@@ -7,6 +7,21 @@
 // arquivo para detalhes). Este arquivo só sabe percorrer o cardápio e
 // aplicar uma lista de IDs removidos sobre o MENU_DATA.
 
+// Nome do campo de texto "editável" de uma entidade: itens usam `name`,
+// tamanhos (dentro de um grupo) usam `label`.
+function getEntityTextField(entity) {
+  return Object.prototype.hasOwnProperty.call(entity, "name") ? "name" : "label";
+}
+
+// Texto ORIGINAL (definido no código) de uma entidade, ignorando qualquer
+// edição de nome já aplicada. Os IDs de produto usam sempre esse texto —
+// nunca o texto editado — para que renomear um produto no Menu
+// Administrativo não quebre a remoção/edição já salva para ele.
+function getBaseText(entity) {
+  const field = getEntityTextField(entity);
+  return Object.prototype.hasOwnProperty.call(entity, "__baseText") ? entity.__baseText : entity[field];
+}
+
 // Percorre todo o cardápio e chama callback({ id, entity, category, group, label, price })
 // para cada produto/tamanho "folha" (o nível que aparece como card no site).
 function forEachMenuProduct(callback) {
@@ -14,7 +29,7 @@ function forEachMenuProduct(callback) {
     if (category.items) {
       category.items.forEach((item) => {
         callback({
-          id: `${category.id}::${item.name}`,
+          id: `${category.id}::${getBaseText(item)}`,
           entity: item,
           category,
           group: null,
@@ -29,7 +44,7 @@ function forEachMenuProduct(callback) {
         if (group.items) {
           group.items.forEach((item) => {
             callback({
-              id: `${category.id}::${group.name}::${item.name}`,
+              id: `${category.id}::${group.name}::${getBaseText(item)}`,
               entity: item,
               category,
               group,
@@ -42,7 +57,7 @@ function forEachMenuProduct(callback) {
         if (group.sizes) {
           group.sizes.forEach((size) => {
             callback({
-              id: `${category.id}::${group.name}::${size.label}`,
+              id: `${category.id}::${group.name}::${getBaseText(size)}`,
               entity: size,
               category,
               group,
@@ -56,16 +71,34 @@ function forEachMenuProduct(callback) {
   });
 }
 
-// Aplica uma lista de IDs removidos sobre o MENU_DATA em memória, marcando
-// `available = false` nos itens/tamanhos removidos pela dona. Preserva
-// qualquer `available: false` já fixado no código (js/menu-data.js) e
-// reativa itens cuja remoção foi desfeita.
-function applyMenuOverrides(removedIds) {
+// Aplica uma lista de IDs removidos e um mapa de edições (nome/preço) sobre
+// o MENU_DATA em memória. `productOverrides` é um objeto { [id]: { price?,
+// text? } } — vem do Menu Administrativo (js/admin.js) via js/menu-sync.js.
+// Preserva qualquer `available: false`, nome e preço já fixados no código
+// (js/menu-data.js) e reverte para eles quando a edição é desfeita.
+function applyMenuOverrides(removedIds, productOverrides) {
   const removedSet = new Set(removedIds || []);
+  const overrides = productOverrides || {};
+
   forEachMenuProduct(({ id, entity }) => {
     if (!Object.prototype.hasOwnProperty.call(entity, "__baseAvailable")) {
       entity.__baseAvailable = entity.available;
     }
+    if (!Object.prototype.hasOwnProperty.call(entity, "__basePrice")) {
+      entity.__basePrice = entity.price;
+    }
+    const textField = getEntityTextField(entity);
+    if (!Object.prototype.hasOwnProperty.call(entity, "__baseText")) {
+      entity.__baseText = entity[textField];
+    }
+
     entity.available = entity.__baseAvailable === false ? false : !removedSet.has(id);
+
+    const override = overrides[id];
+    entity.price = override && typeof override.price === "number" ? override.price : entity.__basePrice;
+    entity[textField] =
+      override && typeof override.text === "string" && override.text.trim()
+        ? override.text.trim()
+        : entity.__baseText;
   });
 }

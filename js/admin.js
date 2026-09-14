@@ -27,20 +27,30 @@
   const tabStats = document.getElementById("tabStats");
 
   let currentRemovedIds = [];
+  let currentOverrides = {};
+  let editingId = null;
 
   function formatPrice(value) {
     return typeof value === "number" ? "R$ " + value.toFixed(2).replace(".", ",") : "—";
   }
 
+  // Converte "12,50" ou "12.50" em 12.5. Retorna null se não for um valor válido.
+  function parsePriceInput(raw) {
+    const normalized = (raw || "").trim().replace(",", ".");
+    if (!normalized) return null;
+    const value = Number(normalized);
+    return Number.isFinite(value) && value >= 0 ? value : null;
+  }
+
   function renderSyncNotice() {
     if (isFirebaseConfigured()) {
       syncNoticeEl.innerHTML =
-        "🟢 <strong>Sincronização em tempo real ativa.</strong> Ao remover ou reativar um produto aqui, " +
-        "a mudança aparece na hora para qualquer cliente, em qualquer aparelho.";
+        "🟢 <strong>Sincronização em tempo real ativa.</strong> Ao remover, reativar ou editar nome/preço " +
+        "de um produto aqui, a mudança aparece na hora para qualquer cliente, em qualquer aparelho.";
     } else {
       syncNoticeEl.innerHTML =
-        "⚠️ <strong>Sincronização em tempo real ainda não configurada.</strong> Por enquanto, as remoções " +
-        "feitas aqui valem somente <strong>neste navegador/dispositivo</strong> — configure o Firebase " +
+        "⚠️ <strong>Sincronização em tempo real ainda não configurada.</strong> Por enquanto, as remoções e " +
+        "edições feitas aqui valem somente <strong>neste navegador/dispositivo</strong> — configure o Firebase " +
         "(js/firebase-config.js) para que a mudança apareça na hora para todos os clientes.";
     }
   }
@@ -57,12 +67,110 @@
     panelSection.hidden = true;
   }
 
+  function buildEditForm(entry) {
+    const override = currentOverrides[entry.id];
+    const ownText = entry.entity[getEntityTextField(entry.entity)];
+
+    const form = document.createElement("form");
+    form.className = "admin-edit-form";
+
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.className = "admin-edit-input admin-edit-name";
+    nameInput.value = ownText || "";
+    nameInput.placeholder = "Nome do produto";
+    nameInput.required = true;
+    form.appendChild(nameInput);
+
+    const priceInput = document.createElement("input");
+    priceInput.type = "text";
+    priceInput.inputmode = "decimal";
+    priceInput.className = "admin-edit-input admin-edit-price";
+    priceInput.value = typeof entry.price === "number" ? String(entry.price).replace(".", ",") : "";
+    priceInput.placeholder = "Preço (ex: 12,50)";
+    form.appendChild(priceInput);
+
+    const actionsRow = document.createElement("div");
+    actionsRow.className = "admin-edit-actions";
+
+    const saveBtn = document.createElement("button");
+    saveBtn.type = "submit";
+    saveBtn.className = "admin-btn admin-edit-save";
+    saveBtn.textContent = "Salvar";
+    actionsRow.appendChild(saveBtn);
+
+    const cancelBtn = document.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.className = "admin-btn admin-edit-cancel";
+    cancelBtn.textContent = "Cancelar";
+    cancelBtn.addEventListener("click", () => {
+      editingId = null;
+      renderList();
+    });
+    actionsRow.appendChild(cancelBtn);
+
+    if (override) {
+      const resetBtn = document.createElement("button");
+      resetBtn.type = "button";
+      resetBtn.className = "admin-btn admin-edit-reset";
+      resetBtn.textContent = "Restaurar original";
+      resetBtn.addEventListener("click", () => {
+        clearProductOverride(entry.id)
+          .then(() => {
+            editingId = null;
+            renderList();
+          })
+          .catch((e) => {
+            alert("Não foi possível restaurar o produto. Verifique sua conexão e tente novamente.\n" + e.message);
+          });
+      });
+      actionsRow.appendChild(resetBtn);
+    }
+
+    form.appendChild(actionsRow);
+
+    const errorEl = document.createElement("p");
+    errorEl.className = "admin-edit-error";
+    form.appendChild(errorEl);
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const text = nameInput.value.trim();
+      const price = parsePriceInput(priceInput.value);
+      if (!text) {
+        errorEl.textContent = "Informe um nome para o produto.";
+        return;
+      }
+      if (price === null) {
+        errorEl.textContent = "Informe um preço válido (ex: 12,50).";
+        return;
+      }
+      setProductOverride(entry.id, { text, price })
+        .then(() => {
+          editingId = null;
+          renderList();
+        })
+        .catch((err) => {
+          alert("Não foi possível salvar a alteração. Verifique sua conexão e tente novamente.\n" + err.message);
+        });
+    });
+
+    return form;
+  }
+
   function buildRow(entry, removedSet) {
     const isRemoved = removedSet.has(entry.id);
     const codeDisabled = entry.entity.available === false && !isRemoved;
+    const override = currentOverrides[entry.id];
 
     const row = document.createElement("div");
     row.className = "admin-row" + (isRemoved || codeDisabled ? " is-removed" : "");
+
+    if (editingId === entry.id) {
+      row.classList.add("is-editing");
+      row.appendChild(buildEditForm(entry));
+      return row;
+    }
 
     const info = document.createElement("div");
     info.className = "admin-row-info";
@@ -82,10 +190,28 @@
     const actions = document.createElement("div");
     actions.className = "admin-row-actions";
 
+    if (override) {
+      const editedTag = document.createElement("span");
+      editedTag.className = "admin-status-tag edited";
+      editedTag.textContent = "Editado";
+      actions.appendChild(editedTag);
+    }
+
     const tag = document.createElement("span");
     tag.className = "admin-status-tag " + (codeDisabled ? "code-disabled" : isRemoved ? "removed" : "available");
     tag.textContent = codeDisabled ? "Fixo no código" : isRemoved ? "Removido" : "Disponível";
     actions.appendChild(tag);
+
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.className = "admin-edit-btn";
+    editBtn.title = "Editar nome e preço";
+    editBtn.textContent = "✏️";
+    editBtn.addEventListener("click", () => {
+      editingId = entry.id;
+      renderList();
+    });
+    actions.appendChild(editBtn);
 
     const switchLabel = document.createElement("label");
     switchLabel.className = "admin-toggle-switch";
@@ -121,6 +247,8 @@
   function renderList() {
     const query = (searchInput.value || "").trim().toLowerCase();
     const removedSet = new Set(currentRemovedIds);
+
+    applyMenuOverrides(currentRemovedIds, currentOverrides);
 
     listEl.innerHTML = "";
     let totalShown = 0;
@@ -196,10 +324,16 @@
     if (typeof refreshStats === "function") refreshStats();
   });
 
-  // Mantém a lista de removidos sempre atualizada (inclusive vinda de
-  // outro aparelho ou de outra aba), mesmo antes do login.
+  // Mantém a lista de removidos e as edições de nome/preço sempre
+  // atualizadas (inclusive vindas de outro aparelho ou de outra aba),
+  // mesmo antes do login.
   subscribeRemovedProducts((ids) => {
     currentRemovedIds = ids;
+    if (!panelSection.hidden) renderList();
+  });
+
+  subscribeProductOverrides((overrides) => {
+    currentOverrides = overrides;
     if (!panelSection.hidden) renderList();
   });
 

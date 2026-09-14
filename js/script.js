@@ -229,12 +229,25 @@
   setupScrollSpy();
   setupMobileNav();
 
-  // Repinta o cardápio sempre que a dona remover/reativar um produto no
-  // Menu Administrativo — em tempo real, via Firebase (ou localStorage se
-  // o Firebase não estiver configurado; ver js/menu-sync.js).
-  subscribeRemovedProducts((removedIds) => {
-    applyMenuOverrides(removedIds);
+  // Repinta o cardápio sempre que a dona remover/reativar um produto, ou
+  // editar nome/preço, no Menu Administrativo — em tempo real, via Firebase
+  // (ou localStorage se o Firebase não estiver configurado; ver js/menu-sync.js).
+  let lastRemovedIds = [];
+  let lastOverrides = {};
+
+  function repaint() {
+    applyMenuOverrides(lastRemovedIds, lastOverrides);
     renderMenu();
     setupScrollSpy();
+  }
+
+  subscribeRemovedProducts((removedIds) => {
+    lastRemovedIds = removedIds;
+    repaint();
+  });
+
+  subscribeProductOverrides((overrides) => {
+    lastOverrides = overrides;
+    repaint();
   });
 })();

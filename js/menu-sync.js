@@ -11,6 +11,9 @@
 const FIREBASE_DB_PATH = "removedProducts";
 const LOCAL_FALLBACK_KEY = "nossoPontoRemovedProducts";
 
+const FIREBASE_OVERRIDES_PATH = "productOverrides";
+const LOCAL_OVERRIDES_KEY = "nossoPontoProductOverrides";
+
 function isFirebaseConfigured() {
   return (
     typeof FIREBASE_CONFIG !== "undefined" &&
@@ -31,6 +34,22 @@ function getFirebaseRef() {
     return firebaseRefCache;
   } catch (e) {
     console.warn("Firebase indisponível — usando remoções apenas locais neste aparelho.", e);
+    firebaseFailed = true;
+    return null;
+  }
+}
+
+let firebaseOverridesRefCache = null;
+
+function getFirebaseOverridesRef() {
+  if (firebaseFailed || !isFirebaseConfigured() || typeof firebase === "undefined") return null;
+  if (firebaseOverridesRefCache) return firebaseOverridesRefCache;
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    firebaseOverridesRefCache = firebase.database().ref(FIREBASE_OVERRIDES_PATH);
+    return firebaseOverridesRefCache;
+  } catch (e) {
+    console.warn("Firebase indisponível — usando edições apenas locais neste aparelho.", e);
     firebaseFailed = true;
     return null;
   }
@@ -126,4 +145,90 @@ function restoreAllProducts() {
   }
 
   return ref.remove();
+}
+
+function getLocalOverrides() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(LOCAL_OVERRIDES_KEY) || "{}");
+    return raw && typeof raw === "object" ? raw : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function setLocalOverrides(map) {
+  localStorage.setItem(LOCAL_OVERRIDES_KEY, JSON.stringify(map));
+}
+
+const localOverridesListeners = new Set();
+
+function notifyLocalOverridesListeners() {
+  const map = getLocalOverrides();
+  localOverridesListeners.forEach((cb) => cb(map));
+}
+
+// Assina mudanças nas edições de nome/preço dos produtos. callback(map) é
+// chamado imediatamente com o estado atual — map: { [id]: { price?, text? } }
+// — e de novo a cada mudança. Retorna uma função para cancelar a assinatura.
+function subscribeProductOverrides(callback) {
+  const ref = getFirebaseOverridesRef();
+
+  if (!ref) {
+    localOverridesListeners.add(callback);
+    callback(getLocalOverrides());
+    const onStorage = (e) => {
+      if (e.key === LOCAL_OVERRIDES_KEY) callback(getLocalOverrides());
+    };
+    window.addEventListener("storage", onStorage);
+    return () => {
+      localOverridesListeners.delete(callback);
+      window.removeEventListener("storage", onStorage);
+    };
+  }
+
+  const handler = (snapshot) => {
+    const val = snapshot.val() || {};
+    const map = {};
+    Object.keys(val).forEach((key) => {
+      map[fromFirebaseKey(key)] = val[key];
+    });
+    callback(map);
+  };
+  ref.on("value", handler, (err) => {
+    console.warn("Firebase: erro ao ler productOverrides, caindo para modo local.", err);
+    firebaseFailed = true;
+    subscribeProductOverrides(callback);
+  });
+  return () => ref.off("value", handler);
+}
+
+// Define a edição de nome/preço de um produto. `data` é { price?, text? };
+// campos omitidos voltam ao valor original definido no código. Retorna uma Promise.
+function setProductOverride(id, data) {
+  const ref = getFirebaseOverridesRef();
+
+  if (!ref) {
+    const map = getLocalOverrides();
+    map[id] = data;
+    setLocalOverrides(map);
+    notifyLocalOverridesListeners();
+    return Promise.resolve();
+  }
+
+  return ref.child(toFirebaseKey(id)).set(data);
+}
+
+// Remove a edição de um produto, restaurando nome e preço originais. Retorna uma Promise.
+function clearProductOverride(id) {
+  const ref = getFirebaseOverridesRef();
+
+  if (!ref) {
+    const map = getLocalOverrides();
+    delete map[id];
+    setLocalOverrides(map);
+    notifyLocalOverridesListeners();
+    return Promise.resolve();
+  }
+
+  return ref.child(toFirebaseKey(id)).remove();
 }

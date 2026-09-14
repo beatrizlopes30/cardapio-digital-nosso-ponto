@@ -4,6 +4,10 @@
       ".read": true,
       ".write": true
     },
+    "productOverrides": {
+      ".read": true,
+      ".write": true
+    },
     "orders": {
       ".read": true,
       ".write": true,
