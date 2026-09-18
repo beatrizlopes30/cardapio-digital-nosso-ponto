@@ -3,6 +3,7 @@
 // pedidos recentes, a partir dos pedidos gravados por js/orders.js.
 (function () {
   const periodSelect = document.getElementById("statsPeriod");
+  const dateInput = document.getElementById("statsDate");
   const syncNoticeEl = document.getElementById("statsSyncNotice");
   const cardsEl = document.getElementById("statsCards");
   const topProductsEl = document.getElementById("statsTopProducts");
@@ -38,6 +39,9 @@
 
   function dateKeysForPeriod(period) {
     if (period === "all") return null;
+    if (period === "date") {
+      return new Set([dateInput.value || todayDateKey()]);
+    }
     const days = period === "today" ? 1 : parseInt(period, 10);
     const keys = new Set();
     const d = new Date();
@@ -205,7 +209,14 @@
 
   window.refreshStats = refreshStats;
 
-  periodSelect.addEventListener("change", refreshStats);
+  periodSelect.addEventListener("change", () => {
+    const isDate = periodSelect.value === "date";
+    dateInput.hidden = !isDate;
+    if (isDate && !dateInput.value) dateInput.value = todayDateKey();
+    refreshStats();
+  });
+
+  dateInput.addEventListener("change", refreshStats);
 
   if (typeof subscribeOrders === "function" && !subscribed) {
     subscribed = true;
