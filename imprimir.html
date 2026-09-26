@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Impressão de Pedidos | Nosso Ponto</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/image.png" type="image/png">
+<link rel="stylesheet" href="css/style.css">
+<style id="paperStyle"></style>
+</head>
+<body class="admin-page print-station-page">
+
+<header class="admin-header">
+  <div class="admin-header-inner">
+    <div>
+      <h1>Impressão de Pedidos</h1>
+      <p>Deixe esta página aberta no computador ligado à impressora</p>
+    </div>
+    <a class="admin-back-link" href="admin.html">← Menu administrativo</a>
+  </div>
+</header>
+
+<main class="admin-main">
+
+  <section id="stationLogin" class="admin-login-card">
+    <h2>Acesso restrito</h2>
+    <p>Digite a senha para ativar a impressão automática.</p>
+    <form id="stationLoginForm">
+      <input type="password" id="stationPassword" placeholder="Senha" autocomplete="current-password">
+      <button type="submit" class="admin-login-btn">Entrar</button>
+      <p class="admin-login-error" id="stationLoginError"></p>
+    </form>
+  </section>
+
+  <section id="stationPanel" hidden>
+    <div class="admin-notice" id="stationNotice"></div>
+
+    <div class="stats-block station-bt">
+      <h2>Impressora</h2>
+      <p id="stationBtStatus"></p>
+      <button type="button" class="admin-login-btn" id="stationBtBtn">Conectar impressora Bluetooth</button>
+    </div>
+
+    <div class="admin-toolbar">
+      <label class="station-toggle">
+        <input type="checkbox" id="stationAutoPrint" checked>
+        Imprimir pedidos novos automaticamente
+      </label>
+      <div class="admin-toolbar-actions">
+        <select id="stationPaper" class="payment-select">
+          <option value="58">Papel 58mm</option>
+          <option value="80">Papel 80mm</option>
+        </select>
+        <button type="button" class="admin-btn" id="stationTestBtn">Imprimir teste</button>
+      </div>
+    </div>
+
+    <div class="stats-block">
+      <h2>Pedidos de hoje</h2>
+      <div id="stationOrdersList"></div>
+      <p class="admin-empty" id="stationOrdersEmpty" hidden>Nenhum pedido hoje ainda.</p>
+    </div>
+  </section>
+
+</main>
+
+<div id="ticket" class="ticket" aria-hidden="true"></div>
+
+<script src="js/menu-data.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="js/orders.js"></script>
+<script src="js/bt-printer.js"></script>
+<script src="js/print-station.js"></script>
+</body>
+</html>
