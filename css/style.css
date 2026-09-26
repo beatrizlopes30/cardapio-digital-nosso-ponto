@@ -1047,6 +1047,24 @@ main { max-width: 1100px; margin: 0 auto; padding: 10px 16px 40px; }
 
 .admin-back-link:hover { background: rgba(255,255,255,0.55); }
 
+.admin-header-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .admin-header-inner {
+    flex-wrap: wrap;
+  }
+
+  .admin-header-links {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
 .admin-main {
   max-width: 900px;
   margin: 0 auto;
@@ -1557,6 +1575,40 @@ textarea:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.station-bt {
+  margin-bottom: 16px;
+}
+
+.station-bt p {
+  margin: 0 0 10px;
+}
+
+.station-bt .admin-login-btn {
+  width: auto;
+  padding: 11px 18px;
+}
+
+.print-station-page .admin-toolbar-actions {
+  flex-wrap: wrap;
+}
+
+.print-station-page .admin-toolbar-actions .payment-select {
+  width: auto;
+}
+
+@media (max-width: 640px) {
+  .station-bt .admin-login-btn,
+  .print-station-page .admin-toolbar-actions {
+    width: 100%;
+  }
+
+  .print-station-page .admin-toolbar-actions > * {
+    flex: 1;
+  }
 }
 
 .ticket {
