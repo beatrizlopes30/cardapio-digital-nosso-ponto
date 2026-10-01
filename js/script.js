@@ -58,8 +58,16 @@
     const getLabel = () => buildLabelWithOptions(item.name, controllers);
     const getPrice = () => price + getControllersExtra(controllers);
     const getKey = () => cartKey(getLabel(), getPrice());
+    const productId = parentGroup
+      ? `${category.id}::${parentGroup.name}::${getBaseText(item)}`
+      : `${category.id}::${getBaseText(item)}`;
+    const getMeta = () => ({
+      productId,
+      optionsSuffix: buildOptionsSuffix(controllers),
+      extra: getControllersExtra(controllers),
+    });
 
-    stepperRef = buildQtyControl(getKey, getPrice, getLabel, controllers, available);
+    stepperRef = buildQtyControl(getKey, getPrice, getLabel, controllers, available, getMeta);
     card.appendChild(stepperRef.el);
 
     return card;
@@ -92,8 +100,13 @@
     const getLabel = () => buildLabelWithOptions(baseLabel, controllers);
     const getPrice = () => size.price + getControllersExtra(controllers);
     const getKey = () => cartKey(getLabel(), getPrice());
+    const getMeta = () => ({
+      productId: `${category.id}::${group.name}::${getBaseText(size)}`,
+      optionsSuffix: buildOptionsSuffix(controllers),
+      extra: getControllersExtra(controllers),
+    });
 
-    stepperRef = buildQtyControl(getKey, getPrice, getLabel, controllers, available);
+    stepperRef = buildQtyControl(getKey, getPrice, getLabel, controllers, available, getMeta);
     card.appendChild(stepperRef.el);
 
     return card;
@@ -232,13 +245,19 @@
   // Repinta o cardápio sempre que a dona remover/reativar um produto, ou
   // editar nome/preço, no Menu Administrativo — em tempo real, via Firebase
   // (ou localStorage se o Firebase não estiver configurado; ver js/menu-sync.js).
-  let lastRemovedIds = [];
-  let lastOverrides = {};
+  //
+  // O carrinho também é atualizado (nome, preço e itens esgotados), para que
+  // a mensagem do WhatsApp saia sempre com os valores atuais. Isso só começa
+  // depois que as duas listas chegaram, para não mexer no carrinho com uma
+  // delas ainda vazia.
+  let lastRemovedIds = null;
+  let lastOverrides = null;
 
   function repaint() {
-    applyMenuOverrides(lastRemovedIds, lastOverrides);
+    applyMenuOverrides(lastRemovedIds || [], lastOverrides || {});
     renderMenu();
     setupScrollSpy();
+    if (lastRemovedIds && lastOverrides) syncCartWithMenu();
   }
 
   subscribeRemovedProducts((removedIds) => {

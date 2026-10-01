@@ -25,13 +25,15 @@ function formatBRL(value) {
   return "R$ " + value.toFixed(2).replace(".", ",");
 }
 
-function addToCart(name, price) {
+// `meta` ({ productId, optionsSuffix, extra }) liga o item ao produto do
+// cardápio, para que syncCartWithMenu() consiga atualizar nome e preço.
+function addToCart(name, price, meta) {
   const key = cartKey(name, price);
   const existing = cart.find((i) => i.key === key);
   if (existing) {
     existing.qty += 1;
   } else {
-    cart.push({ key, name, price, qty: 1 });
+    cart.push({ key, name, price, qty: 1, ...(meta || {}) });
   }
   saveCart();
   renderCart();
@@ -60,6 +62,62 @@ function clearCart() {
   saveCart();
   resetDeliveryFields();
   renderCart();
+}
+
+// Nome e preço atuais (já com as edições do Menu Administrativo) de cada
+// produto do cardápio, no mesmo formato usado pelos cards em script.js.
+function getCurrentMenuProducts() {
+  const products = {};
+  forEachMenuProduct(({ id, entity, group, price }) => {
+    const isSize = getEntityTextField(entity) === "label";
+    products[id] = {
+      name: isSize ? `${group.name} ${entity.label}` : entity.name,
+      price,
+      available: isAvailable(entity, group),
+    };
+  });
+  return products;
+}
+
+// Aplica ao carrinho as mudanças feitas pela dona no Menu Administrativo:
+// atualiza nome/preço dos itens e tira os que ficaram esgotados. Assim a
+// mensagem do WhatsApp sai sempre com os valores atuais do cardápio.
+function syncCartWithMenu() {
+  const products = getCurrentMenuProducts();
+  const removedNames = [];
+  const synced = [];
+
+  cart.forEach((item) => {
+    const product = item.productId ? products[item.productId] : null;
+    if (!product) {
+      // Item antigo (sem productId) ou produto que saiu do cardápio: fica como está.
+      synced.push(item);
+      return;
+    }
+    if (!product.available) {
+      removedNames.push(item.name);
+      return;
+    }
+    const name = product.name + (item.optionsSuffix || "");
+    const price = (typeof product.price === "number" ? product.price : 0) + (item.extra || 0);
+    const key = cartKey(name, price);
+    const same = synced.find((i) => i.key === key);
+    if (same) {
+      same.qty += item.qty;
+    } else {
+      synced.push({ ...item, key, name, price });
+    }
+  });
+
+  const changed = JSON.stringify(synced) !== JSON.stringify(cart);
+  if (!changed) return;
+
+  cart = synced;
+  saveCart();
+  renderCart();
+  if (removedNames.length) {
+    showToast(`Esgotado e retirado do carrinho: ${removedNames.join(", ")}`);
+  }
 }
 
 function cartTotal() {

@@ -9,7 +9,7 @@ function refreshMenuQuantities() {
   menuQtyRefreshers.forEach((fn) => fn());
 }
 
-function buildQtyControl(getKey, getPrice, getLabel, controllers, available) {
+function buildQtyControl(getKey, getPrice, getLabel, controllers, available, getMeta) {
   const wrap = document.createElement("div");
   wrap.className = "menu-qty";
 
@@ -51,7 +51,7 @@ function buildQtyControl(getKey, getPrice, getLabel, controllers, available) {
       showToast(`Selecione "${missing.group.label}" antes de adicionar.`);
       return;
     }
-    addToCart(getLabel(), getPrice());
+    addToCart(getLabel(), getPrice(), getMeta && getMeta());
   });
 
   wrap.appendChild(minusBtn);

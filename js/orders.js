@@ -74,6 +74,19 @@ function setLocalOrders(orders) {
   localStorage.setItem(ORDERS_LOCAL_KEY, JSON.stringify(orders));
 }
 
+// Envia o pedido pela API REST do Firebase com `keepalive`: o navegador
+// termina o envio mesmo que a página vá para segundo plano logo em seguida
+// (o cliente toca em "Enviar pedido" e o celular já pula para o WhatsApp).
+// Sem isso o pedido podia nunca chegar à página de impressão.
+function postOrderKeepalive(payload) {
+  const url = FIREBASE_CONFIG.databaseURL.replace(/\/+$/, "") + `/${ORDERS_DB_PATH}.json`;
+  // Sem cabeçalhos extras: fica uma requisição "simples", sem preflight de CORS.
+  return fetch(url, { method: "POST", body: JSON.stringify(payload), keepalive: true }).then((res) => {
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json().then((data) => data.name);
+  });
+}
+
 // Grava um novo pedido. Retorna uma Promise resolvida quando salvo (ou
 // imediatamente, no modo local). Nunca deve travar o envio do pedido pelo
 // WhatsApp — trate falhas com .catch() sem bloquear o usuário.
@@ -92,6 +105,17 @@ function recordOrder(order) {
     status: "novo",
   };
 
+  if (!ordersFirebaseFailed && ordersFirebaseAvailable() && typeof fetch === "function") {
+    return postOrderKeepalive(payload).catch((e) => {
+      console.warn("Firebase REST: erro ao gravar pedido, tentando pelo SDK.", e);
+      return recordOrderWithSdk(payload, order);
+    });
+  }
+  return recordOrderWithSdk(payload, order);
+}
+
+function recordOrderWithSdk(payload, order) {
+  const now = new Date(payload.createdAt);
   const ref = getOrdersRef();
 
   if (!ref) {

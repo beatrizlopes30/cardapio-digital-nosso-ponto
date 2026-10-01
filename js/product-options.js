@@ -204,11 +204,17 @@ function getControllersExtra(controllers) {
   return controllers.reduce((sum, c) => sum + (c.getPriceExtra ? c.getPriceExtra() : 0), 0);
 }
 
+// Parte do nome que vem das opções escolhidas (ex: " — Frango — Catupiry").
+// Guardada no carrinho separada do nome do produto, para que uma edição de
+// nome no Menu Administrativo possa ser aplicada a itens já no carrinho.
+function buildOptionsSuffix(controllers) {
+  return controllers
+    .map((c) => c.getValue())
+    .filter(Boolean)
+    .map((val) => ` — ${val}`)
+    .join("");
+}
+
 function buildLabelWithOptions(baseName, controllers) {
-  const parts = [baseName];
-  controllers.forEach((c) => {
-    const val = c.getValue();
-    if (val) parts.push(val);
-  });
-  return parts.join(" — ");
+  return baseName + buildOptionsSuffix(controllers);
 }

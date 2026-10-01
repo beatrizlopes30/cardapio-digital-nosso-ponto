@@ -340,12 +340,44 @@
     }
   }
 
+  // Reconecta sozinho à impressora da última vez e, se ela estiver
+  // desligada ou longe, continua tentando — sem precisar de ninguém tocar
+  // na tela.
+  const BT_RETRY_MS = 20 * 1000;
+  const BT_RESTORE_WAIT_MS = 8 * 1000;
+
+  // Resolve quando a reconexão terminar (ou após BT_RESTORE_WAIT_MS).
+  function restorePrinter() {
+    setInterval(() => {
+      if (btPrinter.device && !btPrinter.isConnected()) btPrinter.connect().catch(() => {});
+    }, BT_RETRY_MS);
+
+    const attempt = btPrinter
+      .restore()
+      .then((restored) => {
+        if (restored) keepScreenOn();
+      })
+      .catch((err) => {
+        console.warn("Não foi possível reconectar à impressora salva.", err);
+        renderBtStatus();
+      });
+    return Promise.race([attempt, new Promise((r) => setTimeout(r, BT_RESTORE_WAIT_MS))]);
+  }
+
   function start() {
     loginSection.hidden = true;
     panelSection.hidden = false;
     renderNotice();
     renderBtStatus();
-    if (!unsubscribe) unsubscribe = subscribeOrders(handleOrders);
+    if (!unsubscribe) {
+      // Espera a tentativa de reconexão antes de assinar os pedidos, para
+      // que os pedidos pendentes saiam pela impressora Bluetooth e não pela
+      // janela de impressão do navegador.
+      unsubscribe = () => {};
+      restorePrinter().then(() => {
+        unsubscribe = subscribeOrders(handleOrders);
+      });
+    }
   }
 
   const savedPaper = storageGet(PAPER_KEY) || "58";

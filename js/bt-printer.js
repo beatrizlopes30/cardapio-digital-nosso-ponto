@@ -16,6 +16,8 @@ const BT_PRINTER_SERVICES = [
   "0000fee7-0000-1000-8000-00805f9b34fb",
 ];
 
+const BT_SAVED_DEVICE_KEY = "nossoPontoBtPrinterId";
+
 // Pacotes pequenos: essas impressoras não aceitam escritas longas.
 const BT_CHUNK_SIZE = 20;
 
@@ -40,18 +42,46 @@ const btPrinter = {
     if (typeof this.onStatusChange === "function") this.onStatusChange();
   },
 
+  setDevice(device) {
+    this.device = device;
+    device.addEventListener("gattserverdisconnected", () => {
+      this.characteristic = null;
+      this.notify();
+    });
+    try {
+      localStorage.setItem(BT_SAVED_DEVICE_KEY, device.id);
+    } catch (e) {}
+  },
+
   // Precisa ser chamado a partir de um clique (exigência do navegador).
   async choose() {
     const device = await navigator.bluetooth.requestDevice({
       acceptAllDevices: true,
       optionalServices: BT_PRINTER_SERVICES,
     });
-    this.device = device;
-    device.addEventListener("gattserverdisconnected", () => {
-      this.characteristic = null;
-      this.notify();
-    });
+    this.setDevice(device);
     await this.connect();
+  },
+
+  // Reabre a impressora escolhida da última vez, sem clique — assim, depois
+  // de recarregar a página ou reiniciar o aparelho, a impressão volta
+  // sozinha. Usa navigator.bluetooth.getDevices(), que só existe nas versões
+  // mais novas do Chrome; nas outras, resolve false e é preciso tocar em
+  // "Conectar impressora" de novo.
+  async restore() {
+    if (!this.supported() || typeof navigator.bluetooth.getDevices !== "function") return false;
+    let savedId = null;
+    try {
+      savedId = localStorage.getItem(BT_SAVED_DEVICE_KEY);
+    } catch (e) {}
+    if (!savedId) return false;
+    const devices = await navigator.bluetooth.getDevices();
+    const device = devices.find((d) => d.id === savedId);
+    if (!device) return false;
+    this.setDevice(device);
+    this.notify();
+    await this.connect();
+    return true;
   },
 
   async connect() {
