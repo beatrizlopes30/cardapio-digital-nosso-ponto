@@ -243,6 +243,7 @@ const MENU_DATA = [
     id: "sorvete",
     icon: "🍦",
     title: "Sorvete na Casquinha",
+    subtitle: "⚠️ Não fazemos entrega de Casquinha e Cascão — disponíveis apenas para consumo ou retirada no local",
     items: [
       { name: "Casquinha", price: 5 },
       { name: "Cascão", price: 7 },
