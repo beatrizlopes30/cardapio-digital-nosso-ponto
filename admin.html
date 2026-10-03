@@ -38,7 +38,7 @@
   <section id="adminPanel" hidden>
     <div class="admin-tabs">
       <button type="button" class="admin-tab active" id="tabProductsBtn">Produtos</button>
-      <button type="button" class="admin-tab" id="tabStatsBtn">Pedidos &amp; Estatísticas</button>
+      <button type="button" class="admin-tab" id="tabStatsBtn">Pedidos, Despesas &amp; Lucro</button>
       <button type="button" class="admin-btn admin-logout-btn" id="adminLogoutBtn">Sair</button>
     </div>
 
@@ -87,6 +87,29 @@
         </div>
       </div>
 
+      <div class="stats-block expenses-block">
+        <h2>Despesas</h2>
+        <form id="expenseForm" class="expense-form">
+          <input type="date" id="expenseDate" class="admin-edit-input expense-date" required>
+          <input type="text" id="expenseDescription" class="admin-edit-input expense-description" placeholder="Descrição (ex: leite condensado)" required>
+          <select id="expenseCategory" class="admin-edit-input expense-category">
+            <option>Insumos</option>
+            <option>Embalagens</option>
+            <option>Gás / Energia / Água</option>
+            <option>Aluguel</option>
+            <option>Funcionários</option>
+            <option>Entregas</option>
+            <option>Outros</option>
+          </select>
+          <input type="text" id="expenseAmount" class="admin-edit-input expense-amount" inputmode="decimal" placeholder="Valor (ex: 42,90)" required>
+          <button type="submit" class="admin-btn admin-edit-save">Adicionar</button>
+        </form>
+        <p class="admin-edit-error" id="expenseError"></p>
+        <div id="expensesByCategory"></div>
+        <div id="expensesList"></div>
+        <p class="admin-empty" id="expensesEmpty" hidden>Nenhuma despesa no período selecionado.</p>
+      </div>
+
       <div class="stats-block">
         <h2>Pedidos recentes</h2>
         <div id="statsOrdersList"></div>
@@ -104,6 +127,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="js/menu-sync.js"></script>
 <script src="js/orders.js"></script>
+<script src="js/expenses.js"></script>
 <script src="js/admin.js"></script>
 <script src="js/admin-stats.js"></script>
 </body>

@@ -1516,6 +1516,28 @@ main { max-width: 1100px; margin: 0 auto; padding: 10px 16px 40px; }
   white-space: nowrap;
 }
 
+.stat-card.is-expense .stat-card-value { color: #c0392b; }
+.stat-card.is-profit .stat-card-value { color: #1e8f43; }
+.stat-card.is-loss .stat-card-value { color: #c0392b; }
+
+.expenses-block { margin-bottom: 16px; }
+
+.expense-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.expense-date { flex: 0 1 150px; }
+.expense-description { flex: 2 1 200px; }
+.expense-category { flex: 1 1 150px; }
+.expense-amount { flex: 1 1 110px; }
+
+#expensesByCategory { margin-bottom: 10px; }
+
+.expense-row-amount { color: #c0392b; }
+
 /* ---------- Accessibility ---------- */
 a:focus-visible,
 button:focus-visible,

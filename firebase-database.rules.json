@@ -12,6 +12,11 @@
       ".read": true,
       ".write": true,
       ".indexOn": ["dateKey", "createdAt"]
+    },
+    "expenses": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": ["dateKey"]
     }
   }
 }
