@@ -107,8 +107,12 @@
       delivery.push(`<div class="ticket-big">MESA ${escapeHtml(order.tableNumber)}</div>`);
     }
     if (order.deliveryType === "entrega" && order.address) {
-      delivery.push(`<div>Endereço: ${escapeHtml(order.address)}</div>`);
+      delivery.push(`<div class="ticket-label">ENDEREÇO:</div><div class="ticket-big">${escapeHtml(order.address)}</div>`);
     }
+
+    const customer = order.customerName
+      ? `<hr><div class="ticket-label">CLIENTE:</div><div class="ticket-big">${escapeHtml(order.customerName)}</div>`
+      : "";
 
     const payment = [`<div>Pagamento: ${escapeHtml(order.paymentMethod || "—")}</div>`];
     if (order.paymentChange) payment.push(`<div>Troco para: ${escapeHtml(order.paymentChange)}</div>`);
@@ -117,7 +121,7 @@
       `<div class="ticket-center ticket-big">NOSSO PONTO</div>` +
       `<div class="ticket-center">Pedido #${shortId(order.id)}</div>` +
       `<div class="ticket-center">${formatDateTime(order.createdAt || Date.now())}</div>` +
-      `<hr>${delivery.join("")}<hr>${rows}<hr>` +
+      `${customer}<hr>${delivery.join("")}<hr>${rows}<hr>` +
       `<div class="ticket-item ticket-big"><span>TOTAL</span><span>${formatBRL(order.total)}</span></div>` +
       `<hr>${payment.join("")}` +
       `<div class="ticket-center ticket-feed">.</div>`
@@ -133,10 +137,19 @@
     p.line(formatDateTime(order.createdAt || Date.now()));
     p.align("left").divider();
 
+    if (order.customerName) {
+      p.line("CLIENTE:");
+      p.bold(true).big(true).line(order.customerName).big(false).bold(false);
+      p.divider();
+    }
+
     p.bold(true).big(true).line(DELIVERY_LABELS[order.deliveryType] || "PEDIDO");
     if (order.deliveryType === "mesa" && order.tableNumber) p.line(`MESA ${order.tableNumber}`);
     p.big(false).bold(false);
-    if (order.deliveryType === "entrega" && order.address) p.line(`Endereço: ${order.address}`);
+    if (order.deliveryType === "entrega" && order.address) {
+      p.line("ENDERECO:");
+      p.bold(true).big(true).line(order.address).big(false).bold(false);
+    }
     p.divider();
 
     (order.items || []).forEach((item) => {
@@ -242,7 +255,8 @@
         order.deliveryType === "mesa" && order.tableNumber
           ? `Mesa ${order.tableNumber}`
           : (DELIVERY_LABELS[order.deliveryType] || "").toLowerCase();
-      title.textContent = `#${shortId(order.id)} · ${formatDateTime(order.createdAt).slice(-5)} · ${where}`;
+      const who = order.customerName ? ` · ${order.customerName}` : "";
+      title.textContent = `#${shortId(order.id)} · ${formatDateTime(order.createdAt).slice(-5)}${who} · ${where}`;
       const detail = document.createElement("span");
       detail.textContent = `${formatBRL(order.total)} · ${order.printedAt ? "impresso ✓" : "não impresso"}`;
       info.appendChild(title);
@@ -395,6 +409,7 @@
     const sample = {
       id: "teste",
       createdAt: Date.now(),
+      customerName: "Cliente Teste",
       items: [
         { name: "Coxinha", price: 6, qty: 2 },
         { name: "Refrigerante lata", price: 6, qty: 1 },

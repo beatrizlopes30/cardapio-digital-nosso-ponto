@@ -459,6 +459,9 @@ img { max-width: 100%; display: block; }
   margin-top: 10px;
 }
 
+.customer-name-wrap { margin-bottom: 12px; }
+.customer-name-wrap label { display: block; }
+
 .delivery-address-wrap label {
   display: block;
   font-size: 0.78rem;
@@ -1761,6 +1764,7 @@ textarea:focus-visible {
 
   .ticket-center { text-align: center; }
   .ticket-big { font-weight: 700; font-size: 1.25em; }
+  .ticket-label { font-size: 0.85em; }
   .ticket-feed { margin-top: 10mm; color: #fff; }
 
   .ticket-item {

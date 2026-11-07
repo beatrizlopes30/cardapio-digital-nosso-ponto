@@ -136,6 +136,13 @@ function cartQty(key) {
   return item ? item.qty : 0;
 }
 
+const CUSTOMER_NAME_KEY = "nossoPontoCustomerName";
+
+function getCustomerName() {
+  const el = document.getElementById("customerName");
+  return el ? el.value.trim().replace(/\s+/g, " ") : "";
+}
+
 function getDeliveryType() {
   const checked = document.querySelector('input[name="deliveryType"]:checked');
   return checked ? checked.value : "local";
@@ -183,7 +190,7 @@ function buildOrderMessage() {
   const deliveryType = getDeliveryType();
   const address = getDeliveryAddress();
 
-  const lines = ["Olá! Gostaria de fazer o seguinte pedido no Nosso Ponto:", ""];
+  const lines = ["Olá! Gostaria de fazer o seguinte pedido no Nosso Ponto:", "", `Nome: ${getCustomerName()}`, ""];
   cart.forEach((item) => {
     lines.push(`${item.qty}x ${item.name} — ${formatBRL(item.price * item.qty)}`);
   });
@@ -333,6 +340,13 @@ function updateSendButton() {
     return;
   }
 
+  if (getCustomerName() === "") {
+    sendBtn.classList.add("disabled");
+    sendBtn.removeAttribute("href");
+    msgEl.textContent = "Informe seu nome para continuar.";
+    return;
+  }
+
   if (getDeliveryType() === "entrega" && getDeliveryAddress() === "") {
     sendBtn.classList.add("disabled");
     sendBtn.removeAttribute("href");
@@ -387,6 +401,18 @@ function setupCart() {
     });
   });
 
+  // Lembra o nome do cliente neste aparelho para o próximo pedido.
+  const nameEl = document.getElementById("customerName");
+  try {
+    nameEl.value = localStorage.getItem(CUSTOMER_NAME_KEY) || "";
+  } catch (e) {}
+  nameEl.addEventListener("input", () => {
+    try {
+      localStorage.setItem(CUSTOMER_NAME_KEY, getCustomerName());
+    } catch (e) {}
+    updateSendButton();
+  });
+
   document.getElementById("deliveryAddress").addEventListener("input", updateSendButton);
   document.getElementById("tableNumber").addEventListener("input", updateSendButton);
 
@@ -413,6 +439,7 @@ function setupCart() {
     if (typeof recordOrder !== "function") return;
     const deliveryType = getDeliveryType();
     recordOrder({
+      customerName: getCustomerName(),
       items: cart.map((i) => ({ name: i.name, price: i.price, qty: i.qty })),
       total: cartTotal(),
       deliveryType,

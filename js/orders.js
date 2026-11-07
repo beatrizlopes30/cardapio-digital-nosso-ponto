@@ -14,6 +14,7 @@
 //   {
 //     createdAt: 1735500000000,        // epoch ms
 //     dateKey: "2026-08-29",           // data local, para agrupar por dia
+//     customerName: "Maria" | null,
 //     items: [{ name, price, qty }],
 //     total: 87.5,
 //     deliveryType: "local" | "mesa" | "entrega",
@@ -95,6 +96,7 @@ function recordOrder(order) {
   const payload = {
     createdAt: now.getTime(),
     dateKey: todayDateKey(now),
+    customerName: order.customerName || null,
     items: order.items || [],
     total: order.total || 0,
     deliveryType: order.deliveryType || "local",

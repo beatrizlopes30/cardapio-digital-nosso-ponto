@@ -205,7 +205,7 @@
 
       const meta = document.createElement("span");
       meta.className = "order-row-meta";
-      meta.textContent = `${orderDetailLabel(order)} · ${order.paymentMethod || "—"}`;
+      meta.textContent = `${order.customerName ? order.customerName + " · " : ""}${orderDetailLabel(order)} · ${order.paymentMethod || "—"}`;
 
       info.appendChild(time);
       info.appendChild(items);
