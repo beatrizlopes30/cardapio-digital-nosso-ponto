@@ -43,7 +43,7 @@ function buildQtyControl(getKey, getPrice, getLabel, controllers, available, get
 
   plusBtn.addEventListener("click", () => {
     if (!available) {
-      showToast("Produto esgotado");
+      showToast(typeof isStoreClosed === "function" && isStoreClosed() ? "Estamos fechados no momento" : "Produto esgotado");
       return;
     }
     const missing = findMissingRequired(controllers);

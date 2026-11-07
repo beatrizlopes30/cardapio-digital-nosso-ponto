@@ -337,6 +337,62 @@
     if (!panelSection.hidden) renderList();
   });
 
+  // ---------- Loja aberta/fechada ----------
+  const storeStatusCard = document.getElementById("storeStatusCard");
+  const storeStatusValue = document.getElementById("storeStatusValue");
+  const storeStatusHelp = document.getElementById("storeStatusHelp");
+  const storeMessageInput = document.getElementById("storeClosedMessageInput");
+  const storeToggleBtn = document.getElementById("storeToggleBtn");
+  const storeSaveMessageBtn = document.getElementById("storeSaveMessageBtn");
+  const storeStatusError = document.getElementById("storeStatusError");
+  let storeMessageDirty = false;
+
+  storeMessageInput.placeholder = DEFAULT_STORE_CLOSED_MESSAGE;
+
+  function renderStoreStatus(status) {
+    const closed = status.closed;
+    storeStatusCard.classList.toggle("is-closed", closed);
+    storeStatusValue.textContent = closed ? "🔒 Fechada" : "🟢 Aberta";
+    storeStatusHelp.textContent = closed
+      ? "Os clientes veem o aviso de loja fechada, nenhum produto pode ser adicionado ao carrinho e o envio de pedidos está bloqueado."
+      : "O cardápio está funcionando normalmente. Ao fechar a loja, todos os produtos ficam indisponíveis e os clientes veem a mensagem abaixo.";
+    storeToggleBtn.textContent = closed ? "🟢 Abrir loja" : "🔒 Fechar loja";
+    storeSaveMessageBtn.hidden = !closed;
+    if (!storeMessageDirty) storeMessageInput.value = status.message || "";
+  }
+
+  function saveStoreStatus(closed) {
+    storeStatusError.textContent = "";
+    storeToggleBtn.disabled = true;
+    storeSaveMessageBtn.disabled = true;
+    setStoreStatus(closed, storeMessageInput.value)
+      .then(() => {
+        storeMessageDirty = false;
+      })
+      .catch((e) => {
+        storeStatusError.textContent =
+          "Não foi possível salvar o status da loja. Verifique sua conexão e tente novamente. " + e.message;
+      })
+      .finally(() => {
+        storeToggleBtn.disabled = false;
+        storeSaveMessageBtn.disabled = false;
+      });
+  }
+
+  storeMessageInput.addEventListener("input", () => {
+    storeMessageDirty = true;
+  });
+
+  storeToggleBtn.addEventListener("click", () => {
+    const closing = !isStoreClosed();
+    if (closing && !confirm("Fechar a loja? Os clientes não poderão fazer pedidos até você abrir de novo.")) return;
+    saveStoreStatus(closing);
+  });
+
+  storeSaveMessageBtn.addEventListener("click", () => saveStoreStatus(true));
+
+  subscribeStoreStatus(renderStoreStatus);
+
   if (sessionStorage.getItem(SESSION_KEY) === "1") {
     showPanel();
   } else {

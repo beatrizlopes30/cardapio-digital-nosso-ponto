@@ -83,6 +83,9 @@ function getCurrentMenuProducts() {
 // atualiza nome/preço dos itens e tira os que ficaram esgotados. Assim a
 // mensagem do WhatsApp sai sempre com os valores atuais do cardápio.
 function syncCartWithMenu() {
+  // Com a loja fechada todos os produtos ficam indisponíveis; o carrinho é
+  // mantido (o envio fica bloqueado em updateSendButton) até a loja reabrir.
+  if (typeof isStoreClosed === "function" && isStoreClosed()) return;
   const products = getCurrentMenuProducts();
   const removedNames = [];
   const synced = [];
@@ -315,6 +318,13 @@ function renderCart() {
 function updateSendButton() {
   const sendBtn = document.getElementById("cartSendBtn");
   const msgEl = document.getElementById("cartValidationMsg");
+
+  if (typeof isStoreClosed === "function" && isStoreClosed()) {
+    sendBtn.classList.add("disabled");
+    sendBtn.removeAttribute("href");
+    msgEl.textContent = "Estamos fechados no momento — não é possível enviar pedidos agora.";
+    return;
+  }
 
   if (cart.length === 0) {
     sendBtn.classList.add("disabled");

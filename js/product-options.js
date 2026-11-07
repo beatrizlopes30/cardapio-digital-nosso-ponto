@@ -3,6 +3,7 @@
 // para não duplicar lógica de seleção por categoria.
 
 function isAvailable(entity, parentGroup) {
+  if (typeof isStoreClosed === "function" && isStoreClosed()) return false;
   if (entity && entity.available === false) return false;
   if (parentGroup && parentGroup.available === false) return false;
   return true;

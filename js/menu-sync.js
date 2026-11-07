@@ -232,3 +232,103 @@ function clearProductOverride(id) {
 
   return ref.child(toFirebaseKey(id)).remove();
 }
+
+// ---------- Loja aberta/fechada ----------
+// Quando a dona fecha a loja no Menu Administrativo, nenhum produto fica
+// disponível no cardápio e o carrinho não deixa enviar pedidos. O estado
+// é { closed: boolean, message: string } e fica em "storeStatus".
+
+const FIREBASE_STORE_STATUS_PATH = "storeStatus";
+const LOCAL_STORE_STATUS_KEY = "nossoPontoStoreStatus";
+
+const DEFAULT_STORE_CLOSED_MESSAGE =
+  "No momento não estamos aceitando pedidos. Volte mais tarde — assim que abrirmos, o cardápio fica disponível novamente!";
+
+let currentStoreStatus = { closed: false, message: "" };
+
+function isStoreClosed() {
+  return currentStoreStatus.closed === true;
+}
+
+function getStoreClosedMessage() {
+  return (currentStoreStatus.message || "").trim() || DEFAULT_STORE_CLOSED_MESSAGE;
+}
+
+function normalizeStoreStatus(raw) {
+  return {
+    closed: !!(raw && raw.closed === true),
+    message: raw && typeof raw.message === "string" ? raw.message : "",
+  };
+}
+
+let firebaseStoreStatusRefCache = null;
+
+function getFirebaseStoreStatusRef() {
+  if (firebaseFailed || !isFirebaseConfigured() || typeof firebase === "undefined") return null;
+  if (firebaseStoreStatusRefCache) return firebaseStoreStatusRefCache;
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    firebaseStoreStatusRefCache = firebase.database().ref(FIREBASE_STORE_STATUS_PATH);
+    return firebaseStoreStatusRefCache;
+  } catch (e) {
+    console.warn("Firebase indisponível — usando status da loja apenas local neste aparelho.", e);
+    firebaseFailed = true;
+    return null;
+  }
+}
+
+function getLocalStoreStatus() {
+  try {
+    return normalizeStoreStatus(JSON.parse(localStorage.getItem(LOCAL_STORE_STATUS_KEY) || "{}"));
+  } catch (e) {
+    return normalizeStoreStatus(null);
+  }
+}
+
+const localStoreStatusListeners = new Set();
+
+// Assina mudanças no status da loja. callback(status) é chamado
+// imediatamente com o estado atual e de novo a cada mudança.
+function subscribeStoreStatus(callback) {
+  const ref = getFirebaseStoreStatusRef();
+  const emit = (status) => {
+    currentStoreStatus = status;
+    callback(status);
+  };
+
+  if (!ref) {
+    localStoreStatusListeners.add(emit);
+    emit(getLocalStoreStatus());
+    const onStorage = (e) => {
+      if (e.key === LOCAL_STORE_STATUS_KEY) emit(getLocalStoreStatus());
+    };
+    window.addEventListener("storage", onStorage);
+    return () => {
+      localStoreStatusListeners.delete(emit);
+      window.removeEventListener("storage", onStorage);
+    };
+  }
+
+  const handler = (snapshot) => emit(normalizeStoreStatus(snapshot.val()));
+  ref.on("value", handler, (err) => {
+    console.warn("Firebase: erro ao ler storeStatus, caindo para modo local.", err);
+    firebaseFailed = true;
+    subscribeStoreStatus(callback);
+  });
+  return () => ref.off("value", handler);
+}
+
+// Abre/fecha a loja. `message` é opcional. Retorna uma Promise.
+function setStoreStatus(closed, message) {
+  const status = { closed: !!closed, message: (message || "").trim() };
+  const ref = getFirebaseStoreStatusRef();
+
+  if (!ref) {
+    localStorage.setItem(LOCAL_STORE_STATUS_KEY, JSON.stringify(status));
+    const normalized = normalizeStoreStatus(status);
+    localStoreStatusListeners.forEach((cb) => cb(normalized));
+    return Promise.resolve();
+  }
+
+  return ref.set(status);
+}

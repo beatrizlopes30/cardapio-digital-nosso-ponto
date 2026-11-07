@@ -13,7 +13,7 @@
     if (available) return;
     const badge = document.createElement("span");
     badge.className = "unavailable-badge";
-    badge.textContent = "Esgotado";
+    badge.textContent = typeof isStoreClosed === "function" && isStoreClosed() ? "Fechado" : "Esgotado";
     card.appendChild(badge);
   }
 
@@ -268,5 +268,19 @@
   subscribeProductOverrides((overrides) => {
     lastOverrides = overrides;
     repaint();
+  });
+
+  // Loja fechada pelo Menu Administrativo: mostra o aviso e deixa todos os
+  // produtos indisponíveis (isAvailable() em product-options.js já checa).
+  const closedBanner = document.getElementById("storeClosedBanner");
+  const closedMessage = document.getElementById("storeClosedMessage");
+
+  subscribeStoreStatus(() => {
+    const closed = isStoreClosed();
+    closedBanner.hidden = !closed;
+    closedMessage.textContent = closed ? getStoreClosedMessage() : "";
+    document.body.classList.toggle("store-closed", closed);
+    repaint();
+    if (typeof updateSendButton === "function") updateSendButton();
   });
 })();

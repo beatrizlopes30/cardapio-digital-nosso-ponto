@@ -1637,6 +1637,104 @@ textarea:focus-visible {
   display: none;
 }
 
+/* ---------- Loja fechada ---------- */
+.store-closed-banner {
+  max-width: 720px;
+  margin: 18px auto 0;
+  padding: 16px 18px;
+  background: var(--black);
+  color: var(--cream);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.store-closed-banner[hidden] { display: none; }
+
+.store-closed-banner strong {
+  display: block;
+  color: var(--gold);
+  font-size: 1.05rem;
+  margin-bottom: 4px;
+}
+
+.store-closed-banner p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+@media (max-width: 760px) {
+  .store-closed-banner { margin: 16px 16px 0; }
+}
+
+.store-status-card {
+  background: var(--white);
+  border: 2px solid var(--whatsapp);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow);
+}
+
+.store-status-card.is-closed {
+  border-color: #c0392b;
+  background: #fdecea;
+}
+
+.store-status-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+
+.store-status-value { font-size: 1.15rem; }
+
+.store-status-help {
+  margin: 4px 0 12px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.store-status-message-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.store-status-message {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.store-status-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.store-toggle-btn {
+  background: #c0392b;
+  border-color: #c0392b;
+  color: var(--white);
+  font-size: 0.85rem;
+}
+
+.store-status-card.is-closed .store-toggle-btn {
+  background: var(--whatsapp-dark);
+  border-color: var(--whatsapp-dark);
+}
+
+.store-toggle-btn:disabled { opacity: 0.6; cursor: wait; }
+
 @media print {
   .print-station-page > *:not(.ticket) {
     display: none !important;

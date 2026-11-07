@@ -36,6 +36,21 @@
   </section>
 
   <section id="adminPanel" hidden>
+    <div class="store-status-card" id="storeStatusCard">
+      <div class="store-status-info">
+        <span class="store-status-label">Status da loja</span>
+        <strong class="store-status-value" id="storeStatusValue">Aberta</strong>
+        <p class="store-status-help" id="storeStatusHelp"></p>
+      </div>
+      <label class="store-status-message-label" for="storeClosedMessageInput">Mensagem para os clientes quando a loja estiver fechada (opcional)</label>
+      <textarea id="storeClosedMessageInput" class="admin-edit-input store-status-message" rows="2"></textarea>
+      <div class="store-status-actions">
+        <button type="button" class="admin-btn store-toggle-btn" id="storeToggleBtn">🔒 Fechar loja</button>
+        <button type="button" class="admin-btn" id="storeSaveMessageBtn" hidden>Salvar mensagem</button>
+      </div>
+      <p class="admin-edit-error" id="storeStatusError"></p>
+    </div>
+
     <div class="admin-tabs">
       <button type="button" class="admin-tab active" id="tabProductsBtn">Produtos</button>
       <button type="button" class="admin-tab" id="tabStatsBtn">Pedidos, Despesas &amp; Lucro</button>
