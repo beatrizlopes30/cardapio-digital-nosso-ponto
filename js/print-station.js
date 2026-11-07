@@ -93,6 +93,13 @@
 
   // ---------- Comanda ----------
 
+  // Pagamento em dinheiro: diz se precisa levar troco e para quanto.
+  function changeLine(order) {
+    if (order.paymentChange) return `TROCO PARA: ${order.paymentChange}`;
+    if (order.paymentMethod === "Dinheiro") return "TROCO: NÃO PRECISA";
+    return "";
+  }
+
   function buildTicketHtml(order) {
     const rows = (order.items || [])
       .map(
@@ -110,12 +117,13 @@
       delivery.push(`<div class="ticket-label">ENDEREÇO:</div><div class="ticket-big">${escapeHtml(order.address)}</div>`);
     }
 
-    const customer = order.customerName
-      ? `<hr><div class="ticket-label">CLIENTE:</div><div class="ticket-big">${escapeHtml(order.customerName)}</div>`
-      : "";
+    const customer =
+      `<hr><div class="ticket-label">CLIENTE:</div>` +
+      `<div class="ticket-big">${escapeHtml(order.customerName || "NÃO INFORMADO")}</div>`;
 
-    const payment = [`<div>Pagamento: ${escapeHtml(order.paymentMethod || "—")}</div>`];
-    if (order.paymentChange) payment.push(`<div>Troco para: ${escapeHtml(order.paymentChange)}</div>`);
+    const payment = [`<div class="ticket-strong">PAGAMENTO: ${escapeHtml(order.paymentMethod || "—")}</div>`];
+    const change = changeLine(order);
+    if (change) payment.push(`<div class="ticket-strong">${escapeHtml(change)}</div>`);
 
     return (
       `<div class="ticket-center ticket-big">NOSSO PONTO</div>` +
@@ -137,11 +145,9 @@
     p.line(formatDateTime(order.createdAt || Date.now()));
     p.align("left").divider();
 
-    if (order.customerName) {
-      p.line("CLIENTE:");
-      p.bold(true).big(true).line(order.customerName).big(false).bold(false);
-      p.divider();
-    }
+    p.line("CLIENTE:");
+    p.bold(true).big(true).line(order.customerName || "NAO INFORMADO").big(false).bold(false);
+    p.divider();
 
     p.bold(true).big(true).line(DELIVERY_LABELS[order.deliveryType] || "PEDIDO");
     if (order.deliveryType === "mesa" && order.tableNumber) p.line(`MESA ${order.tableNumber}`);
@@ -161,8 +167,10 @@
     p.bold(true).big(true).pair("TOTAL", formatBRL(order.total), columns / 2).big(false).bold(false);
     p.divider();
 
-    p.line(`Pagamento: ${order.paymentMethod || "-"}`);
-    if (order.paymentChange) p.line(`Troco para: ${order.paymentChange}`);
+    p.bold(true).line(`PAGAMENTO: ${order.paymentMethod || "-"}`);
+    const change = changeLine(order);
+    if (change) p.line(change);
+    p.bold(false);
 
     return p.feed(4).build();
   }

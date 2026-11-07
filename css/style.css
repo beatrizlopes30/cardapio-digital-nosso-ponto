@@ -1765,6 +1765,7 @@ textarea:focus-visible {
   .ticket-center { text-align: center; }
   .ticket-big { font-weight: 700; font-size: 1.25em; }
   .ticket-label { font-size: 0.85em; }
+  .ticket-strong { font-weight: 700; }
   .ticket-feed { margin-top: 10mm; color: #fff; }
 
   .ticket-item {
