@@ -138,7 +138,7 @@
 
   function buildTicketEscPos(order) {
     const columns = paperEl.value === "80" ? 48 : 32;
-    const p = new EscPosBuilder(columns);
+    const p = new EscPosBuilder(columns, { upper: true, allBold: true });
 
     p.align("center").bold(true).big(true).line("NOSSO PONTO").big(false).bold(false);
     p.line(`Pedido #${shortId(order.id)}`);

@@ -136,9 +136,13 @@ function escposText(text) {
 }
 
 class EscPosBuilder {
-  constructor(columns) {
+  // options.upper: tudo em maiúsculas; options.allBold: tudo em negrito.
+  constructor(columns, options = {}) {
     this.columns = columns;
+    this.upper = !!options.upper;
+    this.allBold = !!options.allBold;
     this.bytes = [0x1b, 0x40]; // inicializa a impressora
+    if (this.allBold) this.bold(true);
   }
 
   raw(...values) {
@@ -147,7 +151,7 @@ class EscPosBuilder {
   }
 
   text(value) {
-    const clean = escposText(value);
+    const clean = this.upper ? escposText(value).toUpperCase() : escposText(value);
     for (let i = 0; i < clean.length; i++) this.bytes.push(clean.charCodeAt(i));
     return this;
   }
@@ -161,7 +165,7 @@ class EscPosBuilder {
   }
 
   bold(on) {
-    return this.raw(0x1b, 0x45, on ? 1 : 0);
+    return this.raw(0x1b, 0x45, on || this.allBold ? 1 : 0);
   }
 
   big(on) {
@@ -175,8 +179,8 @@ class EscPosBuilder {
   // Texto à esquerda e valor à direita na mesma linha; se o texto não couber,
   // quebra em mais linhas.
   pair(left, right, columns = this.columns) {
-    const l = escposText(left);
-    const r = escposText(right);
+    const l = this.upper ? escposText(left).toUpperCase() : escposText(left);
+    const r = this.upper ? escposText(right).toUpperCase() : escposText(right);
     const room = columns - r.length - 1;
     const words = l.split(" ");
     const lines = [];
