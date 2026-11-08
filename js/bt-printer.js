@@ -34,6 +34,15 @@ const btPrinter = {
     return !!(this.device && this.device.gatt.connected && this.characteristic);
   },
 
+  // true se esta página já foi usada com uma impressora Bluetooth.
+  hasSavedPrinter() {
+    try {
+      return !!localStorage.getItem(BT_SAVED_DEVICE_KEY);
+    } catch (e) {
+      return false;
+    }
+  },
+
   deviceName() {
     return this.device ? this.device.name || "Impressora" : "";
   },

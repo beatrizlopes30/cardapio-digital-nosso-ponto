@@ -181,6 +181,14 @@
   function printTicket(order) {
     const job = () => {
       if (btPrinter.device) return btPrinter.write(buildTicketEscPos(order));
+      // Esta estação já imprimiu por Bluetooth antes, mas a impressora não
+      // voltou a conectar (ex.: a página recarregou). Não cai para a janela
+      // de impressão do navegador — no celular ela não abre sozinha e o
+      // pedido ficaria marcado como impresso sem sair no papel. O pedido
+      // fica pendente e sai assim que a impressora for conectada.
+      if (btPrinter.hasSavedPrinter()) {
+        return Promise.reject(new Error("Impressora Bluetooth não conectada."));
+      }
       return new Promise((resolve) => {
         ticketEl.innerHTML = buildTicketHtml(order);
         setTimeout(() => {
@@ -220,7 +228,11 @@
     failedIds.add(order.id);
     const ref = getOrdersRef();
     if (ref) ref.child(order.id).child("printedAt").remove().catch(() => {});
-    renderBtStatus(`⚠️ Não consegui imprimir o pedido #${shortId(order.id)}. Verifique se a impressora está ligada.`);
+    renderBtStatus(
+      btPrinter.device
+        ? `⚠️ Não consegui imprimir o pedido #${shortId(order.id)}. Verifique se a impressora está ligada.`
+        : `⚠️ Pedido #${shortId(order.id)} aguardando: a impressora não está conectada. Toque em "Conectar impressora Bluetooth" — os pedidos pendentes saem na hora.`
+    );
   }
 
   function handleOrders(orders) {
