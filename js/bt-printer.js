@@ -145,13 +145,25 @@ function escposText(text) {
 }
 
 class EscPosBuilder {
+  // columns: letras por linha no tamanho normal (32 no papel 58mm, 48 no 80mm).
   // options.upper: tudo em maiúsculas; options.allBold: tudo em negrito.
   constructor(columns, options = {}) {
     this.columns = columns;
     this.upper = !!options.upper;
     this.allBold = !!options.allBold;
+    this.widthMult = 1;
     this.bytes = [0x1b, 0x40]; // inicializa a impressora
     if (this.allBold) this.bold(true);
+  }
+
+  // Letras que cabem numa linha no tamanho de letra atual.
+  get width() {
+    return Math.floor(this.columns / this.widthMult);
+  }
+
+  clean(value) {
+    const text = escposText(value);
+    return this.upper ? text.toUpperCase() : text;
   }
 
   raw(...values) {
@@ -160,7 +172,7 @@ class EscPosBuilder {
   }
 
   text(value) {
-    const clean = this.upper ? escposText(value).toUpperCase() : escposText(value);
+    const clean = this.clean(value);
     for (let i = 0; i < clean.length; i++) this.bytes.push(clean.charCodeAt(i));
     return this;
   }
@@ -177,37 +189,81 @@ class EscPosBuilder {
     return this.raw(0x1b, 0x45, on || this.allBold ? 1 : 0);
   }
 
+  // Tamanho da letra: "normal", "tall" (dobro da altura, mesma largura) ou
+  // "big" (dobro da altura e da largura — cabe metade das letras por linha).
+  size(name) {
+    const sizes = { normal: [1, 0x00], tall: [1, 0x01], big: [2, 0x11] };
+    const [mult, value] = sizes[name] || sizes.normal;
+    this.widthMult = mult;
+    return this.raw(0x1d, 0x21, value);
+  }
+
   big(on) {
-    return this.raw(0x1d, 0x21, on ? 0x11 : 0x00);
+    return this.size(on ? "big" : "normal");
   }
 
-  divider() {
-    return this.line("-".repeat(this.columns));
-  }
-
-  // Texto à esquerda e valor à direita na mesma linha; se o texto não couber,
-  // quebra em mais linhas.
-  pair(left, right, columns = this.columns) {
-    const l = this.upper ? escposText(left).toUpperCase() : escposText(left);
-    const r = this.upper ? escposText(right).toUpperCase() : escposText(right);
-    const room = columns - r.length - 1;
-    const words = l.split(" ");
+  // Quebra o texto em linhas sem cortar palavras no meio.
+  wrapText(value, width = this.width) {
     const lines = [];
-    let current = "";
-    words.forEach((w) => {
-      if ((current + " " + w).trim().length > room && current) {
-        lines.push(current);
-        current = w;
-      } else {
-        current = (current + " " + w).trim();
-      }
-    });
-    lines.push(current);
+    String(value == null ? "" : value)
+      .split("\n")
+      .forEach((paragraph) => {
+        let current = "";
+        this.clean(paragraph)
+          .split(/\s+/)
+          .filter(Boolean)
+          .forEach((word) => {
+            while (word.length > width) {
+              if (current) {
+                lines.push(current);
+                current = "";
+              }
+              lines.push(word.slice(0, width));
+              word = word.slice(width);
+            }
+            if (!word) return;
+            if (!current) current = word;
+            else if (current.length + 1 + word.length <= width) current += " " + word;
+            else {
+              lines.push(current);
+              current = word;
+            }
+          });
+        if (current) lines.push(current);
+      });
+    return lines;
+  }
+
+  // Imprime o texto quebrado por palavras no tamanho de letra atual.
+  wrap(value) {
+    this.wrapText(value).forEach((l) => this.line(l));
+    return this;
+  }
+
+  // Linha separadora na largura toda (volta a letra para o tamanho normal).
+  divider(char = "-") {
+    return this.size("normal").line(char.repeat(this.columns));
+  }
+
+  // Texto à esquerda e valor à direita. Se não couber na mesma linha, o
+  // texto quebra por palavras e o valor fica alinhado à direita na última.
+  pair(left, right) {
+    const width = this.width;
+    const r = this.clean(right);
+    const lines = this.wrapText(left, width);
+    if (!lines.length) lines.push("");
+    const last = lines[lines.length - 1];
+    if (last.length + 1 + r.length > width) lines.push("");
     lines.forEach((text, i) => {
       if (i < lines.length - 1) this.line(text);
-      else this.line(text + " ".repeat(Math.max(1, columns - text.length - r.length)) + r);
+      else this.line(text + " ".repeat(Math.max(1, width - text.length - r.length)) + r);
     });
     return this;
+  }
+
+  // Espaço vertical pequeno (em pontos; 8 pontos = 1mm).
+  gap(dots = 12) {
+    return this.raw(0x1b, 0x4a, dots);
   }
 
   feed(lines) {

@@ -88,7 +88,7 @@
   function applyPaper(width) {
     paperStyleEl.textContent =
       `@page { size: ${width}mm auto; margin: 0; }\n` +
-      `.ticket { width: ${width === "80" ? "72mm" : "48mm"}; font-size: ${width === "80" ? "13px" : "11px"}; }`;
+      `.ticket { width: ${width === "80" ? "72mm" : "48mm"}; font-size: ${width === "80" ? "17px" : "13px"}; }`;
   }
 
   // ---------- Comanda ----------
@@ -101,37 +101,42 @@
   }
 
   function buildTicketHtml(order) {
+    const isDelivery = order.deliveryType === "entrega";
     const rows = (order.items || [])
       .map(
         (item) =>
-          `<div class="ticket-item"><span>${item.qty}x ${escapeHtml(item.name)}</span>` +
-          `<span>${formatBRL(item.price * item.qty)}</span></div>`
+          `<div class="ticket-item"><span class="ticket-item-name">${item.qty}X ${escapeHtml(item.name)}</span>` +
+          `<span class="ticket-item-price">${formatBRL(item.price * item.qty)}</span></div>`
       )
       .join("");
 
-    const delivery = [`<div class="ticket-big">${DELIVERY_LABELS[order.deliveryType] || "PEDIDO"}</div>`];
+    const where = [`<div class="ticket-huge ticket-center">${DELIVERY_LABELS[order.deliveryType] || "PEDIDO"}</div>`];
     if (order.deliveryType === "mesa" && order.tableNumber) {
-      delivery.push(`<div class="ticket-big">MESA ${escapeHtml(order.tableNumber)}</div>`);
-    }
-    if (order.deliveryType === "entrega" && order.address) {
-      delivery.push(`<div class="ticket-label">ENDEREÇO:</div><div class="ticket-big">${escapeHtml(order.address)}</div>`);
+      where.push(`<div class="ticket-huge ticket-center">MESA ${escapeHtml(order.tableNumber)}</div>`);
     }
 
-    const customer =
-      `<hr><div class="ticket-label">CLIENTE:</div>` +
-      `<div class="ticket-big">${escapeHtml(order.customerName || "NÃO INFORMADO")}</div>`;
+    const address =
+      isDelivery && order.address
+        ? `<div class="ticket-label">ENDEREÇO</div><div class="ticket-big">${escapeHtml(order.address)}</div>`
+        : "";
 
-    const payment = [`<div class="ticket-strong">PAGAMENTO: ${escapeHtml(order.paymentMethod || "—")}</div>`];
     const change = changeLine(order);
-    if (change) payment.push(`<div class="ticket-strong">${escapeHtml(change)}</div>`);
 
     return (
-      `<div class="ticket-center ticket-big">NOSSO PONTO</div>` +
-      `<div class="ticket-center">Pedido #${shortId(order.id)}</div>` +
+      `<div class="ticket-huge ticket-center">NOSSO PONTO</div>` +
+      `<div class="ticket-center ticket-tall">PEDIDO #${shortId(order.id)}</div>` +
       `<div class="ticket-center">${formatDateTime(order.createdAt || Date.now())}</div>` +
-      `${customer}<hr>${delivery.join("")}<hr>${rows}<hr>` +
-      `<div class="ticket-item ticket-big"><span>TOTAL</span><span>${formatBRL(order.total)}</span></div>` +
-      `<hr>${payment.join("")}` +
+      `<hr class="ticket-double">${where.join("")}<hr class="ticket-double">` +
+      `<div class="ticket-label">CLIENTE</div>` +
+      `<div class="ticket-big">${escapeHtml(order.customerName || "NÃO INFORMADO")}</div>` +
+      address +
+      `<hr><div class="ticket-label">ITENS</div>${rows}` +
+      `<hr class="ticket-double">` +
+      `<div class="ticket-item ticket-huge"><span>TOTAL</span><span>${formatBRL(order.total)}</span></div>` +
+      `<hr class="ticket-double">` +
+      `<div class="ticket-label">PAGAMENTO</div>` +
+      `<div class="ticket-big">${escapeHtml(order.paymentMethod || "—")}</div>` +
+      (change ? `<div class="ticket-tall">${escapeHtml(change)}</div>` : "") +
       `<div class="ticket-center ticket-feed">.</div>`
     );
   }
@@ -140,39 +145,45 @@
     const columns = paperEl.value === "80" ? 48 : 32;
     const p = new EscPosBuilder(columns, { upper: true, allBold: true });
 
-    p.align("center").bold(true).big(true).line("NOSSO PONTO").big(false).bold(false);
-    p.line(`Pedido #${shortId(order.id)}`);
-    p.line(formatDateTime(order.createdAt || Date.now()));
-    p.align("left").divider();
+    // Cabeçalho
+    p.align("center").size("big").wrap("NOSSO PONTO");
+    p.size("tall").line(`PEDIDO #${shortId(order.id)}`);
+    p.size("normal").line(formatDateTime(order.createdAt || Date.now()));
+    p.divider("=");
 
-    p.line("CLIENTE:");
-    p.bold(true).big(true).line(order.customerName || "NAO INFORMADO").big(false).bold(false);
-    p.divider();
+    // Tipo do pedido (e mesa)
+    p.size("big").wrap(DELIVERY_LABELS[order.deliveryType] || "PEDIDO");
+    if (order.deliveryType === "mesa" && order.tableNumber) p.wrap(`MESA ${order.tableNumber}`);
+    p.divider("=");
 
-    p.bold(true).big(true).line(DELIVERY_LABELS[order.deliveryType] || "PEDIDO");
-    if (order.deliveryType === "mesa" && order.tableNumber) p.line(`MESA ${order.tableNumber}`);
-    p.big(false).bold(false);
+    // Cliente e endereço
+    p.align("left").line("CLIENTE:");
+    p.size("big").wrap(order.customerName || "NAO INFORMADO");
     if (order.deliveryType === "entrega" && order.address) {
-      p.line("ENDERECO:");
-      p.bold(true).big(true).line(order.address).big(false).bold(false);
+      p.size("normal").gap(10).line("ENDERECO:");
+      p.size("big").wrap(order.address);
     }
     p.divider();
 
+    // Itens
+    p.line("ITENS:");
+    p.size("tall");
     (order.items || []).forEach((item) => {
-      p.pair(`${item.qty}x ${item.name}`, formatBRL(item.price * item.qty));
+      p.pair(`${item.qty}x ${item.name}`, formatBRL(item.price * item.qty)).gap(8);
     });
-    p.divider();
+    p.divider("=");
 
-    // Letra dupla ocupa o dobro do espaço, então cabe metade das colunas.
-    p.bold(true).big(true).pair("TOTAL", formatBRL(order.total), columns / 2).big(false).bold(false);
-    p.divider();
+    // Total
+    p.size("big").pair("TOTAL", formatBRL(order.total));
+    p.divider("=");
 
-    p.bold(true).line(`PAGAMENTO: ${order.paymentMethod || "-"}`);
+    // Pagamento e troco
+    p.line("PAGAMENTO:");
+    p.size("big").wrap(order.paymentMethod || "-");
     const change = changeLine(order);
-    if (change) p.line(change);
-    p.bold(false);
+    if (change) p.size("tall").wrap(change);
 
-    return p.feed(4).build();
+    return p.size("normal").feed(5).build();
   }
 
   // Com a impressora Bluetooth escolhida, a comanda vai direto para ela;
@@ -432,11 +443,12 @@
       customerName: "Cliente Teste",
       items: [
         { name: "Coxinha", price: 6, qty: 2 },
+        { name: "Pizza Grande (Calabresa, Borda: Catupiry)", price: 54.9, qty: 1 },
         { name: "Refrigerante lata", price: 6, qty: 1 },
       ],
-      total: 18,
-      deliveryType: "mesa",
-      tableNumber: "3",
+      total: 72.9,
+      deliveryType: "entrega",
+      address: "Rua Pará, 123, Centro - perto da Escola Manoel Bezerra",
       paymentMethod: "Dinheiro",
       paymentChange: "R$ 20,00",
     };
