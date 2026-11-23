@@ -332,3 +332,101 @@ function setStoreStatus(closed, message) {
 
   return ref.set(status);
 }
+
+// ---------- Produtos novos cadastrados pelo Menu Administrativo ----------
+// Ficam em "customProducts" como { [chave]: { name, desc, price, emoji,
+// section, createdAt } }. `section` é o id da categoria ("salgados") ou
+// "categoria::grupo" ("pastelao::Doce"). js/menu-catalog.js injeta esses
+// produtos no MENU_DATA (applyCustomProducts).
+
+const FIREBASE_CUSTOM_PRODUCTS_PATH = "customProducts";
+const LOCAL_CUSTOM_PRODUCTS_KEY = "nossoPontoCustomProducts";
+
+let firebaseCustomProductsRefCache = null;
+
+function getFirebaseCustomProductsRef() {
+  if (firebaseFailed || !isFirebaseConfigured() || typeof firebase === "undefined") return null;
+  if (firebaseCustomProductsRefCache) return firebaseCustomProductsRefCache;
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    firebaseCustomProductsRefCache = firebase.database().ref(FIREBASE_CUSTOM_PRODUCTS_PATH);
+    return firebaseCustomProductsRefCache;
+  } catch (e) {
+    console.warn("Firebase indisponível — usando produtos novos apenas locais neste aparelho.", e);
+    firebaseFailed = true;
+    return null;
+  }
+}
+
+function getLocalCustomProducts() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(LOCAL_CUSTOM_PRODUCTS_KEY) || "{}");
+    return raw && typeof raw === "object" ? raw : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+const localCustomProductsListeners = new Set();
+
+function setLocalCustomProducts(map) {
+  localStorage.setItem(LOCAL_CUSTOM_PRODUCTS_KEY, JSON.stringify(map));
+  localCustomProductsListeners.forEach((cb) => cb(getLocalCustomProducts()));
+}
+
+// Assina mudanças nos produtos novos. callback(map) é chamado imediatamente
+// com o estado atual e de novo a cada mudança.
+function subscribeCustomProducts(callback) {
+  const ref = getFirebaseCustomProductsRef();
+
+  if (!ref) {
+    localCustomProductsListeners.add(callback);
+    callback(getLocalCustomProducts());
+    const onStorage = (e) => {
+      if (e.key === LOCAL_CUSTOM_PRODUCTS_KEY) callback(getLocalCustomProducts());
+    };
+    window.addEventListener("storage", onStorage);
+    return () => {
+      localCustomProductsListeners.delete(callback);
+      window.removeEventListener("storage", onStorage);
+    };
+  }
+
+  const handler = (snapshot) => callback(snapshot.val() || {});
+  ref.on("value", handler, (err) => {
+    console.warn("Firebase: erro ao ler customProducts, caindo para modo local.", err);
+    firebaseFailed = true;
+    subscribeCustomProducts(callback);
+  });
+  return () => ref.off("value", handler);
+}
+
+// Cadastra um produto novo. `data` é { name, desc, price, emoji, section }.
+// Retorna uma Promise.
+function addCustomProduct(data) {
+  const product = { ...data, createdAt: Date.now() };
+  const ref = getFirebaseCustomProductsRef();
+
+  if (!ref) {
+    const map = getLocalCustomProducts();
+    map["p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)] = product;
+    setLocalCustomProducts(map);
+    return Promise.resolve();
+  }
+
+  return ref.push(product);
+}
+
+// Exclui um produto novo pela chave. Retorna uma Promise.
+function deleteCustomProduct(key) {
+  const ref = getFirebaseCustomProductsRef();
+
+  if (!ref) {
+    const map = getLocalCustomProducts();
+    delete map[key];
+    setLocalCustomProducts(map);
+    return Promise.resolve();
+  }
+
+  return ref.child(key).remove();
+}

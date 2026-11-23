@@ -14,7 +14,7 @@
   <div class="admin-header-inner">
     <div>
       <h1>Menu Administrativo</h1>
-      <p>Ativar ou remover produtos do cardápio</p>
+      <p>Adicionar, editar, ativar ou remover produtos do cardápio</p>
     </div>
     <div class="admin-header-links">
       <a class="admin-back-link" href="imprimir.html">🖨 Impressão de pedidos</a>
@@ -59,6 +59,44 @@
 
     <div id="tabProducts">
       <div class="admin-notice" id="adminSyncNotice"></div>
+
+      <details class="new-product-card" id="newProductCard">
+        <summary>➕ Adicionar produto novo</summary>
+        <form id="newProductForm" class="new-product-form">
+          <label class="new-product-field">
+            <span>Seção do cardápio</span>
+            <select id="newProductSection" class="admin-edit-input" required></select>
+          </label>
+
+          <div class="new-product-field">
+            <span>Emoji</span>
+            <div class="emoji-picker" id="newProductEmojiPicker"></div>
+            <input type="text" id="newProductEmoji" class="admin-edit-input emoji-input" maxlength="8" placeholder="Ou cole outro emoji aqui" aria-label="Emoji do produto">
+          </div>
+
+          <label class="new-product-field">
+            <span>Nome do produto</span>
+            <input type="text" id="newProductName" class="admin-edit-input" placeholder="Ex: Pastel de Bacon" required>
+          </label>
+
+          <label class="new-product-field">
+            <span>Descrição (opcional)</span>
+            <input type="text" id="newProductDesc" class="admin-edit-input" placeholder="Ex: Bacon com queijo mussarela">
+          </label>
+
+          <label class="new-product-field">
+            <span>Preço</span>
+            <input type="text" id="newProductPrice" class="admin-edit-input" inputmode="decimal" placeholder="Ex: 12,50" required>
+          </label>
+
+          <div class="new-product-preview" id="newProductPreview"></div>
+
+          <div class="admin-edit-actions">
+            <button type="submit" class="admin-btn admin-edit-save" id="newProductSubmit">Adicionar ao cardápio</button>
+          </div>
+          <p class="admin-edit-error" id="newProductError"></p>
+        </form>
+      </details>
 
       <div class="admin-toolbar">
         <input type="search" id="adminSearch" class="admin-search" placeholder="Buscar produto...">

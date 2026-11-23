@@ -102,3 +102,70 @@ function applyMenuOverrides(removedIds, productOverrides) {
         : entity.__baseText;
   });
 }
+
+// Lista as seções onde um produto novo pode entrar: cada categoria e cada
+// grupo de itens dentro dela (grupos de tamanhos, como as porções, ficam de
+// fora). Retorna [{ value, label }], `value` no formato usado em
+// customProducts[].section.
+function listMenuSections() {
+  const sections = [];
+  MENU_DATA.forEach((category) => {
+    sections.push({ value: category.id, label: `${category.icon} ${category.title}` });
+    (category.groups || []).forEach((group) => {
+      if (group.items) {
+        sections.push({
+          value: `${category.id}::${group.name}`,
+          label: `${category.icon} ${category.title} › ${group.name}`,
+        });
+      }
+    });
+  });
+  return sections;
+}
+
+// Encontra a lista de itens de uma seção ("categoria" ou "categoria::grupo").
+// Cria `category.items` se a categoria só tinha grupos. Retorna null se a
+// seção não existir mais.
+function findSectionItems(section, create) {
+  const [categoryId, groupName] = String(section || "").split("::");
+  const category = MENU_DATA.find((c) => c.id === categoryId);
+  if (!category) return null;
+  if (groupName) {
+    const group = (category.groups || []).find((g) => g.name === groupName && g.items);
+    return group ? group.items : null;
+  }
+  if (!category.items && create) {
+    category.items = [];
+    category.__customItemsArray = true;
+  }
+  return category.items || null;
+}
+
+// Injeta no MENU_DATA os produtos novos cadastrados no Menu Administrativo
+// (ver subscribeCustomProducts em js/menu-sync.js), substituindo os que
+// foram injetados antes. Deve rodar ANTES de applyMenuOverrides.
+function applyCustomProducts(customProducts) {
+  MENU_DATA.forEach((category) => {
+    if (category.items) category.items = category.items.filter((i) => !i.__custom);
+    (category.groups || []).forEach((group) => {
+      if (group.items) group.items = group.items.filter((i) => !i.__custom);
+    });
+    if (category.__customItemsArray && category.items && category.items.length === 0) {
+      delete category.items;
+      delete category.__customItemsArray;
+    }
+  });
+
+  Object.keys(customProducts || {})
+    .map((key) => ({ key, ...customProducts[key] }))
+    .filter((p) => p && typeof p.name === "string" && p.name.trim() && typeof p.price === "number")
+    .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
+    .forEach((p) => {
+      const items = findSectionItems(p.section, true);
+      if (!items) return;
+      const item = { name: p.name.trim(), price: p.price, __custom: p.key };
+      if (p.desc && String(p.desc).trim()) item.desc = String(p.desc).trim();
+      if (p.emoji && String(p.emoji).trim()) item.emoji = String(p.emoji).trim();
+      items.push(item);
+    });
+}

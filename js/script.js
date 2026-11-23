@@ -29,7 +29,13 @@
 
     const name = document.createElement("span");
     name.className = "item-name";
-    name.textContent = item.name;
+    if (item.emoji) {
+      const emoji = document.createElement("span");
+      emoji.className = "item-emoji";
+      emoji.textContent = item.emoji;
+      name.appendChild(emoji);
+    }
+    name.appendChild(document.createTextNode(item.name));
     top.appendChild(name);
 
     if (typeof price === "number") {
@@ -248,17 +254,25 @@
   //
   // O carrinho também é atualizado (nome, preço e itens esgotados), para que
   // a mensagem do WhatsApp saia sempre com os valores atuais. Isso só começa
-  // depois que as duas listas chegaram, para não mexer no carrinho com uma
+  // depois que as três listas chegaram, para não mexer no carrinho com uma
   // delas ainda vazia.
   let lastRemovedIds = null;
   let lastOverrides = null;
+  let lastCustomProducts = null;
 
   function repaint() {
+    applyCustomProducts(lastCustomProducts || {});
     applyMenuOverrides(lastRemovedIds || [], lastOverrides || {});
     renderMenu();
     setupScrollSpy();
-    if (lastRemovedIds && lastOverrides) syncCartWithMenu();
+    if (lastRemovedIds && lastOverrides && lastCustomProducts) syncCartWithMenu();
   }
+
+  // Produtos novos cadastrados no Menu Administrativo (com seção e emoji).
+  subscribeCustomProducts((customProducts) => {
+    lastCustomProducts = customProducts;
+    repaint();
+  });
 
   subscribeRemovedProducts((removedIds) => {
     lastRemovedIds = removedIds;

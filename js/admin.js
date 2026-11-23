@@ -28,6 +28,7 @@
 
   let currentRemovedIds = [];
   let currentOverrides = {};
+  let currentCustomProducts = {};
   let editingId = null;
 
   function formatPrice(value) {
@@ -177,7 +178,7 @@
 
     const name = document.createElement("span");
     name.className = "admin-row-name";
-    name.textContent = entry.label;
+    name.textContent = (entry.entity.emoji ? entry.entity.emoji + " " : "") + entry.label;
     info.appendChild(name);
 
     const meta = document.createElement("span");
@@ -189,6 +190,13 @@
 
     const actions = document.createElement("div");
     actions.className = "admin-row-actions";
+
+    if (entry.entity.__custom) {
+      const newTag = document.createElement("span");
+      newTag.className = "admin-status-tag custom";
+      newTag.textContent = "Novo";
+      actions.appendChild(newTag);
+    }
 
     if (override) {
       const editedTag = document.createElement("span");
@@ -212,6 +220,16 @@
       renderList();
     });
     actions.appendChild(editBtn);
+
+    if (entry.entity.__custom) {
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "admin-edit-btn";
+      deleteBtn.title = "Excluir este produto do cardápio";
+      deleteBtn.textContent = "🗑️";
+      deleteBtn.addEventListener("click", () => removeCustomProduct(entry));
+      actions.appendChild(deleteBtn);
+    }
 
     const switchLabel = document.createElement("label");
     switchLabel.className = "admin-toggle-switch";
@@ -238,6 +256,23 @@
     return row;
   }
 
+  // Exclui de vez um produto cadastrado pelo admin, junto com qualquer
+  // edição/remoção salva para ele (para não sobrar lixo se outro produto
+  // for criado depois com o mesmo nome).
+  function removeCustomProduct(entry) {
+    if (!confirm(`Excluir "${entry.label}" do cardápio? Isso não pode ser desfeito.`)) return;
+    deleteCustomProduct(entry.entity.__custom)
+      .then(() =>
+        Promise.all([
+          currentOverrides[entry.id] ? clearProductOverride(entry.id) : null,
+          currentRemovedIds.includes(entry.id) ? setProductRemoved(entry.id, false) : null,
+        ])
+      )
+      .catch((e) => {
+        alert("Não foi possível excluir o produto. Verifique sua conexão e tente novamente.\n" + e.message);
+      });
+  }
+
   function toggleProduct(id, remove) {
     setProductRemoved(id, remove).catch((e) => {
       alert("Não foi possível salvar a alteração. Verifique sua conexão e tente novamente.\n" + e.message);
@@ -248,6 +283,7 @@
     const query = (searchInput.value || "").trim().toLowerCase();
     const removedSet = new Set(currentRemovedIds);
 
+    applyCustomProducts(currentCustomProducts);
     applyMenuOverrides(currentRemovedIds, currentOverrides);
 
     listEl.innerHTML = "";
@@ -336,6 +372,165 @@
     currentOverrides = overrides;
     if (!panelSection.hidden) renderList();
   });
+
+  subscribeCustomProducts((customProducts) => {
+    currentCustomProducts = customProducts;
+    if (!panelSection.hidden) renderList();
+  });
+
+  // ---------- Adicionar produto novo ----------
+  const SUGGESTED_EMOJIS = [
+    "🥟", "🌮", "🥐", "🥪", "🍕", "🍔", "🌭", "🍟", "🧀", "🥓", "🍗", "🥩",
+    "🍳", "🥗", "🍝", "🍚", "🌯", "🥙", "🥤", "🧃", "🥛", "☕", "🍹", "🍺",
+    "🍧", "🍨", "🍦", "🍫", "🍰", "🎂", "🧁", "🍩", "🍪", "🍮", "🍓", "🍌",
+    "🥭", "🍍", "🥥", "🍇", "🔥", "⭐",
+  ];
+
+  const newProductCard = document.getElementById("newProductCard");
+  const newProductForm = document.getElementById("newProductForm");
+  const newProductSection = document.getElementById("newProductSection");
+  const newProductEmojiPicker = document.getElementById("newProductEmojiPicker");
+  const newProductEmoji = document.getElementById("newProductEmoji");
+  const newProductName = document.getElementById("newProductName");
+  const newProductDesc = document.getElementById("newProductDesc");
+  const newProductPrice = document.getElementById("newProductPrice");
+  const newProductPreview = document.getElementById("newProductPreview");
+  const newProductSubmit = document.getElementById("newProductSubmit");
+  const newProductError = document.getElementById("newProductError");
+
+  listMenuSections().forEach((section) => {
+    const option = document.createElement("option");
+    option.value = section.value;
+    option.textContent = section.label;
+    newProductSection.appendChild(option);
+  });
+
+  function selectEmoji(emoji) {
+    newProductEmoji.value = emoji;
+    renderEmojiPicker();
+    renderNewProductPreview();
+  }
+
+  function renderEmojiPicker() {
+    const selected = newProductEmoji.value.trim();
+    newProductEmojiPicker.innerHTML = "";
+
+    const none = document.createElement("button");
+    none.type = "button";
+    none.className = "emoji-option emoji-none" + (selected ? "" : " selected");
+    none.textContent = "Sem";
+    none.title = "Sem emoji";
+    none.addEventListener("click", () => selectEmoji(""));
+    newProductEmojiPicker.appendChild(none);
+
+    SUGGESTED_EMOJIS.forEach((emoji) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "emoji-option" + (emoji === selected ? " selected" : "");
+      btn.textContent = emoji;
+      btn.addEventListener("click", () => selectEmoji(emoji));
+      newProductEmojiPicker.appendChild(btn);
+    });
+  }
+
+  function renderNewProductPreview() {
+    const name = newProductName.value.trim();
+    const price = parsePriceInput(newProductPrice.value);
+    const emoji = newProductEmoji.value.trim();
+    const desc = newProductDesc.value.trim();
+    const option = newProductSection.selectedOptions[0];
+
+    newProductPreview.innerHTML = "";
+    if (!name) return;
+
+    const title = document.createElement("strong");
+    title.textContent = `${emoji ? emoji + " " : ""}${name} — ${price === null ? "R$ ?" : formatPrice(price)}`;
+    newProductPreview.appendChild(title);
+    if (desc) {
+      const d = document.createElement("span");
+      d.textContent = desc;
+      newProductPreview.appendChild(d);
+    }
+    const where = document.createElement("small");
+    where.textContent = "Vai aparecer em: " + (option ? option.textContent : "");
+    newProductPreview.appendChild(where);
+  }
+
+  // Preenche o preço com o do grupo (ex.: Pastelão › Doce = R$ 11) quando o
+  // campo ainda estiver vazio.
+  newProductSection.addEventListener("change", () => {
+    const [categoryId, groupName] = newProductSection.value.split("::");
+    const category = MENU_DATA.find((c) => c.id === categoryId);
+    const group = category && groupName ? (category.groups || []).find((g) => g.name === groupName) : null;
+    if (group && typeof group.price === "number" && !newProductPrice.value.trim()) {
+      newProductPrice.value = String(group.price).replace(".", ",");
+    }
+    renderNewProductPreview();
+  });
+
+  [newProductName, newProductDesc, newProductPrice].forEach((el) =>
+    el.addEventListener("input", renderNewProductPreview)
+  );
+  newProductEmoji.addEventListener("input", () => {
+    renderEmojiPicker();
+    renderNewProductPreview();
+  });
+
+  newProductForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    newProductError.textContent = "";
+
+    const section = newProductSection.value;
+    const name = newProductName.value.trim();
+    const desc = newProductDesc.value.trim();
+    const emoji = newProductEmoji.value.trim();
+    const price = parsePriceInput(newProductPrice.value);
+
+    if (!section) {
+      newProductError.textContent = "Escolha a seção do cardápio.";
+      return;
+    }
+    if (!name) {
+      newProductError.textContent = "Informe o nome do produto.";
+      return;
+    }
+    if (price === null) {
+      newProductError.textContent = "Informe um preço válido (ex: 12,50).";
+      return;
+    }
+
+    // O ID do produto é "seção::nome" — não pode repetir um que já existe.
+    const newId = `${section}::${name}`.toLowerCase();
+    let duplicate = false;
+    forEachMenuProduct(({ id }) => {
+      if (id.toLowerCase() === newId) duplicate = true;
+    });
+    if (duplicate) {
+      newProductError.textContent = "Já existe um produto com esse nome nessa seção.";
+      return;
+    }
+
+    newProductSubmit.disabled = true;
+    addCustomProduct({ section, name, price, emoji, desc })
+      .then(() => {
+        newProductName.value = "";
+        newProductDesc.value = "";
+        newProductPrice.value = "";
+        selectEmoji("");
+        newProductCard.open = false;
+        searchInput.value = "";
+        renderList();
+      })
+      .catch((err) => {
+        newProductError.textContent =
+          "Não foi possível adicionar o produto. Verifique sua conexão e tente novamente. " + err.message;
+      })
+      .finally(() => {
+        newProductSubmit.disabled = false;
+      });
+  });
+
+  renderEmojiPicker();
 
   // ---------- Loja aberta/fechada ----------
   const storeStatusCard = document.getElementById("storeStatusCard");

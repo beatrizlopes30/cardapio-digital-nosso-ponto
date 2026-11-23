@@ -8,6 +8,10 @@
       ".read": true,
       ".write": true
     },
+    "customProducts": {
+      ".read": true,
+      ".write": true
+    },
     "productOverrides": {
       ".read": true,
       ".write": true
